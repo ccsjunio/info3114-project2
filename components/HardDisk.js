@@ -2,11 +2,24 @@ import { DiskDevice } from "/components/DiskDevice.js";
 
 export class HardDisk extends DiskDevice{
 
-    constructor(status,replacementCost,supplierName,serialNumber,size,transferRate){
-        super(status,replacementCost,supplierName,serialNumber,size,transferRate);
-        this._platterSize = "";
-        this._numberOfPlatters = "";
-        this._namespace = "hardDisk";
+    constructor(id,status,replacementCost,supplierName,serialNumber,size,transferRate,platterSize,numberOfPlatters){
+        super(id,status,replacementCost,supplierName,serialNumber,size,transferRate);
+        this._platterSize = {
+            name: "Platter Size",
+            value: platterSize,
+            type: "string",
+            possibleValues: []
+        };
+        this._numberOfPlatters = {
+            name: "Number of platters",
+            value: numberOfPlatters,
+            type: "integer",
+            possibleValues: []
+        };
+        this._namespace = {
+            name: "hardDisk",
+            title: "Hard Disk"
+        };
     }
 
 }

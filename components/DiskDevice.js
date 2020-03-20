@@ -2,11 +2,22 @@ import { Device } from "/components/Device.js";
 
 export class DiskDevice extends Device{
 
-    constructor(status,replacementCost,supplierName,serialNumber){
-        super(status,replacementCost,supplierName,serialNumber);
-        this._size = "";
-        this._transferRate = "";
-        this._namespace = "diskDevice";
+    constructor(id,status,replacementCost,supplierName,serialNumber,size,transferRate){
+        super(id,status,replacementCost,supplierName,serialNumber);
+        this._size = {
+            value: size,
+            type: "string",
+            possibleValues: []
+        };
+        this._transferRate = {
+            value: transferRate,
+            type: "string",
+            possibleValues: []
+        };
+        this._namespace = {
+            name: "diskDevice",
+            title: "Disk Device"
+        }
     }
 
 }

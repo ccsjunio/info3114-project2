@@ -2,11 +2,24 @@ import { Device } from "/components/Device.js";
 
 export class VideoDevice extends Device{
 
-    constructor(status,replacementCost,supplierName,serialNumber){
-        super(status,replacementCost,supplierName,serialNumber);
-        this._resolution = "";
-        this._type = "";
-        this._namespace = "videoDevice";
+    constructor(id,status,replacementCost,supplierName,serialNumber,resolution,type){
+        super(id,status,replacementCost,supplierName,serialNumber);
+        this._resolution = {
+            name: "Resolution",
+            value: resolution,
+            type: "string",
+            possibleValues: []
+        },
+        this._type = {
+            name: "Type",
+            value: type,
+            type: "string",
+            possibleValues: ["LCD","LED","Plasma"]
+        };
+        this._namespace = {
+            name: "videoDevice",
+            title: "Video Device"
+        };
     }
 
 }

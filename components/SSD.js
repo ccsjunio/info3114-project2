@@ -1,12 +1,23 @@
 import { DiskDevice } from "/components/DiskDevice.js";
 
-export class SDD extends DiskDevice{
+export class SSD extends DiskDevice{
 
-    constructor(status,replacementCost,supplierName,serialNumber,size,transferRate){
-        super(status,replacementCost,supplierName,serialNumber,size,transferRate);
-        this._type = "";
-        this._wearLeveling = "";
-        this._namespace = "SDD";
+    constructor(id,status,replacementCost,supplierName,serialNumber,size,transferRate,type,wearLeveling){
+        super(id,status,replacementCost,supplierName,serialNumber,size,transferRate);
+        this._type = {
+            name: "Type",
+            value: type,
+            type: "string",
+            possibleValues: ["Flash","DRAM"]
+        };
+        this._wearLeveling = {
+            name: "Wear Leveling",
+            value: wearLeveling,
+            type: "boolean",
+            possibleValues: [true,false]
+        };
+        this._namespace = "ssd";
+        this._namespaceTitle = "SSD"
     }
 
 }

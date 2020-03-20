@@ -1,8 +1,8 @@
-function buildDeviceCard(device){
+function buildDeviceCard(namespace){
     return `<div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 card-col">
-        <div class="card" namespace="${device.namespace}">
+        <div class="card" namespace="${namespace.name}">
             <div class="card-body">
-                <h5 class="card-title">${device.title}</h5>
+                <h5 class="card-title">${namespace.title}</h5>
                 <p class="card-text">
                     <div class="card device-contents">
 
