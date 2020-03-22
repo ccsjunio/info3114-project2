@@ -6,7 +6,7 @@ export class Device {
             name: "Status",
             value: status,
             type: "flag",
-            possibleValues: [0,1]
+            possibleValues: [1,0]
         };
         this._replacementCost = {
             name: "Replacement Cost",

@@ -13,7 +13,7 @@ export class VideoDevice extends Device{
         this._type = {
             name: "Type",
             value: type,
-            type: "string",
+            type: "stringSelect",
             possibleValues: ["LCD","LED","Plasma"]
         };
         this._namespace = {

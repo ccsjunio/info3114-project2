@@ -7,7 +7,7 @@ export class SSD extends DiskDevice{
         this._type = {
             name: "Type",
             value: type,
-            type: "string",
+            type: "stringSelect",
             possibleValues: ["Flash","DRAM"]
         };
         this._wearLeveling = {
@@ -15,6 +15,18 @@ export class SSD extends DiskDevice{
             value: wearLeveling,
             type: "boolean",
             possibleValues: [true,false]
+        };
+        this._size = {
+            name: "Size",
+            value: size,
+            type: "string",
+            possibleValues: []
+        };
+        this._transferRate = {
+            name: "Transfer Rate",
+            value: transferRate,
+            type: "string",
+            possibleValues: []
         };
         this._namespace = "ssd";
         this._namespaceTitle = "SSD"

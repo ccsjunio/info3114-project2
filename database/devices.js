@@ -11,7 +11,7 @@ let devices = [
     },
     {
         id: 2,
-        status: 1,
+        status: 0,
         replacementCost: 350,
         supplierName: "Samsumg",
         serialNumber: "12343dfd4456",
@@ -64,7 +64,7 @@ let devices = [
         size: "8TB",
         transferRate: "2GB / second",
         type: "Flash",
-        wearLeveling: true,
+        wearLeveling: false,
         namespace: {name:"ssd",title:"SSD"}
     }
 ];

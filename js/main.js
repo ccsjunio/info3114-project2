@@ -3,9 +3,11 @@ import { buildDeviceCard } from "/templates/deviceCard.js";
 import { VideoDevice } from "/components/VideoDevice.js";
 import { HardDisk } from "/components/HardDisk.js";
 import { SSD } from "/components/SSD.js";
+import { toCurrency } from "/utils/custom-functions.js";
 
 window.onload = function(){
     initialize();
+    
 }
 
 function initialize(){
@@ -45,7 +47,7 @@ function initialize(){
     // iterate for each class
     console.log("namespaces function:",namespaces);
     namespaces.forEach((namespace)=>{
-        console.log("mapping namespaces");
+        console.log("mapping namespace===========================================");
         let devices = deviceObjects[namespace.name];
         console.log(`devices for namespace ${namespace.name}:`,devices);
         
@@ -53,22 +55,156 @@ function initialize(){
 
         let row = document.createElement("div");
         row.classList.add("row");
-
-        devices.forEach((device)=>{
-            let column = document.createElement("div");
-            column.classList.add("col-12","text-center");
-            let columnMarkup = "";
-            for(let attr in device){
-                let name = device[attr].name==undefined ? device[attr] : device[attr].name;
-                columnMarkup += name + ": " + device[attr].value + "<br/>";
-            }
-            column.innerHTML = columnMarkup;
-            row.appendChild(column);
-        });
-
         card.appendChild(row);
 
-    });
+        devices.forEach((device)=>{
+            console.log("inside devices foreach - device is :",device);
+
+            let id = device._id;
+            console.log("id = ",id);
+
+            let column = document.createElement("div");
+            column.classList.add("col-12","text-center","device-window");
+            column.setAttribute("deviceId",id);
+            row.appendChild(column);
+
+            let form = document.createElement("form");
+            column.appendChild(form);
+
+            for(let attr in device){
+                
+                console.log("attr>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+                console.log("attr = ",attr);
+
+                if(device[attr].name===undefined) continue;
+                
+                let name = device[attr].name;
+                let value = device[attr].value;
+                let type = device[attr].type;
+                let possibleValues = device[attr].possibleValues;
+
+                console.log("form inside attr for before field append:",form);
+
+                let field = document.createElement("div");
+                field.setAttribute("deviceId",id);
+                form.appendChild(field);
+
+                console.log("form inside attr for after field append:",form);
+
+                let input = document.createElement("input");
+                let select = document.createElement("select");
+                let label = document.createElement("label");
+
+                switch(type){
+
+                    case "flag":
+                        field.classList.add("custom-control","custom-switch","text-left");
+                        input.setAttribute("type","checkbox");
+                        input.classList.add("custom-control-input");
+                        input.id = attr+"Switch"+id;
+                        if(value===0){
+                            input.removeAttribute("checked");
+                        } else if (value===1){
+                            input.setAttribute("checked","checked");
+                        }
+                        field.appendChild(input);
+                        label.classList.add("custom-control-label");
+                        label.setAttribute("for",attr+"Switch"+id);
+                        label.innerHTML = name;
+                        field.appendChild(label);
+                    break;
+
+                    case "boolean":
+                        field.classList.add("custom-control","custom-switch","text-left");
+                        input.setAttribute("type","checkbox");
+                        input.classList.add("custom-control-input");
+                        input.id = attr+"Switch"+id;
+                        if(!value){
+                            input.removeAttribute("checked");
+                        } else if (value){
+                            input.setAttribute("checked","checked");
+                        }
+                        field.appendChild(input);
+                        label.classList.add("custom-control-label");
+                        label.setAttribute("for",attr+"Switch"+id);
+                        label.innerHTML = name;
+                        field.appendChild(label);
+                    break;
+
+                    case "string":
+                        field.classList.add("form-group", "text-left");
+                        label.setAttribute("for",attr+"Input"+id);
+                        label.innerHTML = name;
+                        field.appendChild(label);
+                        input.setAttribute("type","text");
+                        input.setAttribute("placeholder","0.00");
+                        input.classList.add("form-control");
+                        input.id = attr+"Input"+id;
+                        input.value = value;
+                        field.appendChild(input);
+                    break;
+
+                    case "integer":
+                        field.classList.add("form-group", "text-left");
+                        label.setAttribute("for",attr+"Input"+id);
+                        label.innerHTML = name;
+                        field.appendChild(label);
+                        input.setAttribute("type","number");
+                        input.setAttribute("placeholder","0");
+                        input.classList.add("form-control");
+                        input.id = attr+"Input"+id;
+                        input.value = value;
+                        field.appendChild(input);
+                    break;
+
+                    case "stringSelect":
+                        field.classList.add("form-group", "text-left");
+                        label.setAttribute("for",attr+"Select"+id);
+                        label.innerHTML = name;
+                        field.appendChild(label);
+                        select.classList.add("form-control");
+                        select.id = attr+"Select"+id;
+                        let option = document.createElement("option");
+                        option.value = "";
+                        option.innerHTML = 'choose ' + name.toLowerCase();
+                        select.appendChild(option);
+                        possibleValues.forEach((element)=>{
+                            let option = document.createElement("option");
+                            select.appendChild(option);
+                            option.value = element.toLowerCase();
+                            option.innerHTML = element;
+                            if(element.toLowerCase()==device[attr].value.toLowerCase()){
+                                option.setAttribute("selected","selected");
+                            }
+                        });
+                        field.appendChild(select);
+                    break;
+
+                    case "currency":
+                        field.classList.add("form-group", "text-left");
+                        label.setAttribute("for",attr+"Input"+id);
+                        label.innerHTML = name;
+                        field.appendChild(label);
+                        input.setAttribute("type","text");
+                        input.setAttribute("placeholder","0.00");
+                        input.classList.add("form-control");
+                        input.id = attr+"Input"+id;
+                        input.value = toCurrency(value);
+                        field.appendChild(input);
+                    break;
+
+                } // end of switch
+
+            }// end of for(let attr in device)
+            
+        }); // end of devices.forEach((device)
+
+        console.log("card = ",card);
+
+    }); // end of namespaces.forEach((namespace)
+
+    
+
 }
 
 
