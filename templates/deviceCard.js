@@ -10,7 +10,7 @@ function buildDeviceCard(namespace){
                 </p>
                 <div class="row action-buttons action-buttons-navigation" namespace="${namespace.name}" visibleDeviceIndex="0">
                     <div class="col">
-                        <a href="#" class="btn btn-primary">previous</a>
+                        <a href="#" class="btn btn-primary previousDeviceButton" namespace="${namespace.name}">previous</a>
                     </div><!-- endo of col -->
                     <div class="col">
                         <a href="#" class="btn btn-primary nextDeviceButton" namespace="${namespace.name}">next</a>

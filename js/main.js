@@ -13,11 +13,15 @@ window.onload = function(){
     let nextDeviceButtons = document.querySelectorAll(".nextDeviceButton");
     console.log("next device buttons ==================================== ",nextDeviceButtons);
     nextDeviceButtons.forEach((button)=>{
-        let namespace = button.getAttribute("namespace");
         button.addEventListener("click",showNextDeviceInNamespace);
     });
 
     //bind previous button
+    let previousDeviceButtons = document.querySelectorAll(".previousDeviceButton");
+    console.log("previous device buttons ==================================== ",previousDeviceButtons);
+    previousDeviceButtons.forEach((button)=>{
+        button.addEventListener("click",showPreviousDeviceInNamespace);
+    });
 
     //bind new button
 
@@ -38,6 +42,20 @@ function showNextDeviceInNamespace(event){
     if( devices.length - 1 == +visibleDeviceIndex ) return false;
     devices[visibleDeviceIndex].style.display = "none";
     devices[++visibleDeviceIndex].style.display = "block";
+    actionButtonsNavigation.setAttribute("visibleDeviceIndex",visibleDeviceIndex);
+}
+
+function showPreviousDeviceInNamespace(event){
+    event.stopPropagation();
+    event.preventDefault();
+    let button = event.target;
+    let namespace = button.getAttribute("namespace");
+    let actionButtonsNavigation = document.querySelector(`.action-buttons-navigation[namespace="${namespace}"]`);
+    let visibleDeviceIndex = actionButtonsNavigation.getAttribute("visibleDeviceIndex");
+    let devices = document.querySelectorAll(`.device-contents[namespace="${namespace}"] .deviceItem`);
+    if( 0 == +visibleDeviceIndex ) return false;
+    devices[visibleDeviceIndex].style.display = "none";
+    devices[--visibleDeviceIndex].style.display = "block";
     actionButtonsNavigation.setAttribute("visibleDeviceIndex",visibleDeviceIndex);
 }
 
