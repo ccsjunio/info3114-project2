@@ -18,13 +18,13 @@ function buildDeviceCard(namespace){
                 </div><!-- end of row -->
                 <div class="row action-buttons action-buttons-data">
                     <div class="col">
-                        <a href="#" class="btn btn-success newDeviceButton" namespace="${namespace.name}">new</a>
+                        <button href="#" class="btn btn-success newDeviceButton" namespace="${namespace.name}">new</button>
                     </div><!-- endo of col -->
                     <div class="col">
-                        <a href="#" class="btn btn-warning updateDeviceButton" namespace="${namespace.name}">update</a>
+                        <button href="#" class="btn btn-warning updateDeviceButton" namespace="${namespace.name}">update</button>
                     </div><!-- endo of col -->
                     <div class="col">
-                        <a href="#" class="btn btn-danger deleteDeviceButton" namespace="${namespace.name}">delete</a>
+                        <button href="#" class="btn btn-danger deleteDeviceButton" namespace="${namespace.name}">delete</button>
                     </div><!-- endo of col -->
                 </div><!-- end of row -->
             </div><!-- end of card body -->

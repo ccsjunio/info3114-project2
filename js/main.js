@@ -115,12 +115,15 @@ function initialize(){
         // set up how navigation buttons will be enabled
         let previousButton = document.querySelector(`.previousDeviceButton[namespace="${namespace.name}"]`);
         let nextButton = document.querySelector(`.nextDeviceButton[namespace="${namespace.name}"]`);
+        let updateButton = document.querySelector(`.updateDeviceButton[namespace="${namespace.name}"]`);
         // disable previous because the first device in the list will be visible at first
         previousButton.disabled = true; 
         // if there is only one device in the namespace, next will also be disabled
         if(devices.length===1) {
             nextButton.disabled = true;
         } // end of setup of navigation buttons
+        //disable update button, that will be enabled only upon a modification of some field
+        updateButton.disabled = true;
 
         
         let card = document.querySelector(`.card[namespace='${namespace.name}'] .device-contents`);
