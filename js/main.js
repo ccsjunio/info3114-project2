@@ -111,6 +111,17 @@ function initialize(){
         console.log("mapping namespace===========================================");
         let devices = deviceObjects[namespace.name];
         console.log(`devices for namespace ${namespace.name}:`,devices);
+
+        // set up how navigation buttons will be enabled
+        let previousButton = document.querySelector(`.previousDeviceButton[namespace="${namespace.name}"]`);
+        let nextButton = document.querySelector(`.nextDeviceButton[namespace="${namespace.name}"]`);
+        // disable previous because the first device in the list will be visible at first
+        previousButton.disabled = true; 
+        // if there is only one device in the namespace, next will also be disabled
+        if(devices.length===1) {
+            nextButton.disabled = true;
+        } // end of setup of navigation buttons
+
         
         let card = document.querySelector(`.card[namespace='${namespace.name}'] .device-contents`);
 
@@ -294,7 +305,7 @@ function initialize(){
 
     });
 
-}
+} // end of initialize
 
 
 
