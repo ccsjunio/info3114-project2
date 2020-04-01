@@ -6,8 +6,39 @@ import { SSD } from "/components/SSD.js";
 import { toCurrency } from "/utils/custom-functions.js";
 
 window.onload = function(){
-    initialize();
     
+    initialize();
+
+    //bind next button
+    let nextDeviceButtons = document.querySelectorAll(".nextDeviceButton");
+    console.log("next device buttons ==================================== ",nextDeviceButtons);
+    nextDeviceButtons.forEach((button)=>{
+        let namespace = button.getAttribute("namespace");
+        button.addEventListener("click",showNextDeviceInNamespace);
+    });
+
+    //bind previous button
+
+    //bind new button
+
+    //bind update button
+
+    //bind delete button
+    
+}
+
+function showNextDeviceInNamespace(event){
+    event.stopPropagation();
+    event.preventDefault();
+    let button = event.target;
+    let namespace = button.getAttribute("namespace");
+    let actionButtonsNavigation = document.querySelector(`.action-buttons-navigation[namespace="${namespace}"]`);
+    let visibleDeviceIndex = actionButtonsNavigation.getAttribute("visibleDeviceIndex");
+    let devices = document.querySelectorAll(`.device-contents[namespace="${namespace}"] .deviceItem`);
+    if( devices.length - 1 == +visibleDeviceIndex ) return false;
+    devices[visibleDeviceIndex].style.display = "none";
+    devices[++visibleDeviceIndex].style.display = "block";
+    actionButtonsNavigation.setAttribute("visibleDeviceIndex",visibleDeviceIndex);
 }
 
 function initialize(){
@@ -64,8 +95,10 @@ function initialize(){
             console.log("id = ",id);
 
             let column = document.createElement("div");
-            column.classList.add("col-12","text-center","device-window");
+            column.classList.add("col-12","text-center","device-window","deviceItem");
             column.setAttribute("deviceId",id);
+            column.setAttribute("namespace",namespace.name);
+            column.style.display = "none";
             row.appendChild(column);
 
             let form = document.createElement("form");
@@ -100,6 +133,8 @@ function initialize(){
                     case "flag":
                         field.classList.add("custom-control","custom-switch","text-left");
                         input.setAttribute("type","checkbox");
+                        input.setAttribute("deviceId",id);
+                        input.setAttribute("namespace",namespace.name);
                         input.classList.add("custom-control-input");
                         input.id = attr+"Switch"+id;
                         if(value===0){
@@ -117,6 +152,8 @@ function initialize(){
                     case "boolean":
                         field.classList.add("custom-control","custom-switch","text-left");
                         input.setAttribute("type","checkbox");
+                        input.setAttribute("deviceId",id);
+                        input.setAttribute("namespace",namespace.name);
                         input.classList.add("custom-control-input");
                         input.id = attr+"Switch"+id;
                         if(!value){
@@ -138,6 +175,8 @@ function initialize(){
                         field.appendChild(label);
                         input.setAttribute("type","text");
                         input.setAttribute("placeholder","0.00");
+                        input.setAttribute("deviceId",id);
+                        input.setAttribute("namespace",namespace.name);
                         input.classList.add("form-control");
                         input.id = attr+"Input"+id;
                         input.value = value;
@@ -151,6 +190,8 @@ function initialize(){
                         field.appendChild(label);
                         input.setAttribute("type","number");
                         input.setAttribute("placeholder","0");
+                        input.setAttribute("deviceId",id);
+                        input.setAttribute("namespace",namespace.name);
                         input.classList.add("form-control");
                         input.id = attr+"Input"+id;
                         input.value = value;
@@ -164,6 +205,8 @@ function initialize(){
                         field.appendChild(label);
                         select.classList.add("form-control");
                         select.id = attr+"Select"+id;
+                        select.setAttribute("deviceId",id);
+                        select.setAttribute("namespace",namespace.name);
                         let option = document.createElement("option");
                         option.value = "";
                         option.innerHTML = 'choose ' + name.toLowerCase();
@@ -187,6 +230,8 @@ function initialize(){
                         field.appendChild(label);
                         input.setAttribute("type","text");
                         input.setAttribute("placeholder","0.00");
+                        input.setAttribute("deviceId",id);
+                        input.setAttribute("namespace",namespace.name);
                         input.classList.add("form-control");
                         input.id = attr+"Input"+id;
                         input.value = toCurrency(value);
@@ -196,6 +241,8 @@ function initialize(){
                 } // end of switch
 
             }// end of for(let attr in device)
+
+
             
         }); // end of devices.forEach((device)
 
@@ -203,7 +250,19 @@ function initialize(){
 
     }); // end of namespaces.forEach((namespace)
 
-    
+    //show the first element on each namespace
+    namespaces = document.querySelectorAll(".device-contents");
+    console.log(namespaces);
+
+    namespaces.forEach((namespace)=>{
+
+        let devices = namespace.querySelectorAll(".device-window");
+        console.log("device:",devices);
+
+        console.log(devices[0]);
+        devices[0].style.display = "block";
+
+    });
 
 }
 

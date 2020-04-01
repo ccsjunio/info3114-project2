@@ -4,27 +4,27 @@ function buildDeviceCard(namespace){
             <div class="card-body">
                 <h5 class="card-title">${namespace.title}</h5>
                 <p class="card-text">
-                    <div class="card device-contents">
+                    <div class="card device-contents" namespace="${namespace.name}" >
 
                     </div><!-- end of card -->
                 </p>
-                <div class="row action-buttons action-buttons-navigation">
+                <div class="row action-buttons action-buttons-navigation" namespace="${namespace.name}" visibleDeviceIndex="0">
                     <div class="col">
                         <a href="#" class="btn btn-primary">previous</a>
                     </div><!-- endo of col -->
                     <div class="col">
-                        <a href="#" class="btn btn-primary">next</a>
+                        <a href="#" class="btn btn-primary nextDeviceButton" namespace="${namespace.name}">next</a>
                     </div><!-- endo of col -->
                 </div><!-- end of row -->
                 <div class="row action-buttons action-buttons-data">
                     <div class="col">
-                        <a href="#" class="btn btn-success">new</a>
+                        <a href="#" class="btn btn-success newDeviceButton" namespace="${namespace.name}">new</a>
                     </div><!-- endo of col -->
                     <div class="col">
-                        <a href="#" class="btn btn-warning">update</a>
+                        <a href="#" class="btn btn-warning updateDeviceButton" namespace="${namespace.name}">update</a>
                     </div><!-- endo of col -->
                     <div class="col">
-                        <a href="#" class="btn btn-danger">delete</a>
+                        <a href="#" class="btn btn-danger deleteDeviceButton" namespace="${namespace.name}">delete</a>
                     </div><!-- endo of col -->
                 </div><!-- end of row -->
             </div><!-- end of card body -->
