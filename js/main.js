@@ -26,6 +26,36 @@ window.onload = function(){
     //bind new button
 
     //bind update button
+    let updateDeviceButtons = document.querySelectorAll(".updateDeviceButton");
+    console.log("update device buttons ==================================== ",updateDeviceButtons);
+    previousDeviceButtons.forEach((button)=>{
+        button.addEventListener("click",updateDeviceInNamespace);
+    });
+
+    //bind each device field in order to enable update button on changing events
+    let fields = document.querySelectorAll(".deviceField");
+    fields.forEach((field)=>{
+        console.log("this field is binding to change *************************", field);
+        let namespace = field.getAttribute("namespace");
+        let button = document.querySelector(`.updateDeviceButton[namespace="${namespace}"]`);
+        if(button.disabled=true){
+            button.setAttribute("toBeEnabled","true");
+            field.addEventListener("change",enableUpdateButton);
+            field.addEventListener("blur",enableUpdateButton);
+            field.addEventListener("keyup",enableUpdateButton);
+        }
+    }); // end of fields.forEach field
+
+    function enableUpdateButton(event){
+        console.log("enableUpdateButton called");
+        let field = event.target;
+        let namespace = field.getAttribute("namespace");
+        let button = document.querySelector(`.updateDeviceButton[toBeEnabled="true"][namespace="${namespace}"]`);
+        if(button!==undefined && button!==null){
+            button.disabled = false;
+            button.removeAttribute("toBeEnabled");
+        }
+    }
 
     //bind delete button
     
@@ -69,7 +99,24 @@ function showPreviousDeviceInNamespace(event){
         console.log("disable button", button);
         button.disabled = true;
     }
-}
+} // end of function showPreviousDeviceInNamespace
+
+function updateDeviceInNamespace(event){
+    event.stopPropagation();
+    event.preventDefault();
+    let button = event.target;
+    let namespace = button.getAttribute("namespace");
+    let updateButton = document.querySelector(`.updateDeviceButton[namespace="${namespace}"]`);
+    let actionButtonsNavigation = document.querySelector(`.action-buttons-navigation[namespace="${namespace}"]`);
+    let visibleDeviceIndex = actionButtonsNavigation.getAttribute("visibleDeviceIndex");
+    let devices = document.querySelectorAll(`.device-contents[namespace="${namespace}"] .deviceItem`);
+    let device = devices[visibleDeviceIndex];
+    let deviceId = device.getAttribute("deviceId");
+    //get through each attribute of device to check what's changed
+    let fields = device.querySelectorAll(`.deviceField`);
+    console.log('fields = ',fields)
+
+} // end of function updateDeviceInNamespace
 
 function initialize(){
 
@@ -179,7 +226,10 @@ function initialize(){
                         input.setAttribute("type","checkbox");
                         input.setAttribute("deviceId",id);
                         input.setAttribute("namespace",namespace.name);
+                        input.setAttribute("originalValue",value);
+                        input.setAttribute("for",attr);
                         input.classList.add("custom-control-input");
+                        input.classList.add("deviceField");
                         input.id = attr+"Switch"+id;
                         if(value===0){
                             input.removeAttribute("checked");
@@ -198,7 +248,10 @@ function initialize(){
                         input.setAttribute("type","checkbox");
                         input.setAttribute("deviceId",id);
                         input.setAttribute("namespace",namespace.name);
+                        input.setAttribute("originalValue",value);
+                        input.setAttribute("for",attr);
                         input.classList.add("custom-control-input");
+                        input.classList.add("deviceField");
                         input.id = attr+"Switch"+id;
                         if(!value){
                             input.removeAttribute("checked");
@@ -221,7 +274,10 @@ function initialize(){
                         input.setAttribute("placeholder","0.00");
                         input.setAttribute("deviceId",id);
                         input.setAttribute("namespace",namespace.name);
+                        input.setAttribute("originalValue",value);
+                        input.setAttribute("for",attr);
                         input.classList.add("form-control");
+                        input.classList.add("deviceField");
                         input.id = attr+"Input"+id;
                         input.value = value;
                         field.appendChild(input);
@@ -236,7 +292,10 @@ function initialize(){
                         input.setAttribute("placeholder","0");
                         input.setAttribute("deviceId",id);
                         input.setAttribute("namespace",namespace.name);
+                        input.setAttribute("originalValue",value);
+                        input.setAttribute("for",attr);
                         input.classList.add("form-control");
+                        input.classList.add("deviceField");
                         input.id = attr+"Input"+id;
                         input.value = value;
                         field.appendChild(input);
@@ -251,6 +310,8 @@ function initialize(){
                         select.id = attr+"Select"+id;
                         select.setAttribute("deviceId",id);
                         select.setAttribute("namespace",namespace.name);
+                        select.setAttribute("originalValue",value);
+                        select.setAttribute("for",attr);
                         let option = document.createElement("option");
                         option.value = "";
                         option.innerHTML = 'choose ' + name.toLowerCase();
@@ -276,7 +337,10 @@ function initialize(){
                         input.setAttribute("placeholder","0.00");
                         input.setAttribute("deviceId",id);
                         input.setAttribute("namespace",namespace.name);
+                        input.setAttribute("originalValue",value);
+                        input.setAttribute("for",attr);
                         input.classList.add("form-control");
+                        input.classList.add("deviceField");
                         input.id = attr+"Input"+id;
                         input.value = toCurrency(value);
                         field.appendChild(input);
@@ -285,8 +349,6 @@ function initialize(){
                 } // end of switch
 
             }// end of for(let attr in device)
-
-
             
         }); // end of devices.forEach((device)
 
