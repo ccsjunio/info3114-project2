@@ -2,8 +2,8 @@ import { Device } from "/components/Device.js";
 
 export class DiskDevice extends Device{
 
-    constructor(id,status,replacementCost,supplierName,serialNumber,size,transferRate){
-        super(id,status,replacementCost,supplierName,serialNumber);
+    constructor(id,status,replacementCost,supplierName,serialNumber,size,transferRate,update){
+        super(id,status,replacementCost,supplierName,serialNumber,update);
         this._size = {
             value: size,
             type: "string",

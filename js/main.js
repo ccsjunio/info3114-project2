@@ -5,20 +5,25 @@ import { HardDisk } from "/components/HardDisk.js";
 import { SSD } from "/components/SSD.js";
 import { toCurrency } from "/utils/custom-functions.js";
 
+let deviceObjects = [];
+let namespaces = [];
+
 window.onload = function(){
     
+    console.log("devices at load = ", devices);
+
     initialize();
 
     //bind next button
     let nextDeviceButtons = document.querySelectorAll(".nextDeviceButton");
-    console.log("next device buttons ==================================== ",nextDeviceButtons);
+    //console.log("next device buttons ==================================== ",nextDeviceButtons);
     nextDeviceButtons.forEach((button)=>{
         button.addEventListener("click",showNextDeviceInNamespace);
     });
 
     //bind previous button
     let previousDeviceButtons = document.querySelectorAll(".previousDeviceButton");
-    console.log("previous device buttons ==================================== ",previousDeviceButtons);
+    //console.log("previous device buttons ==================================== ",previousDeviceButtons);
     previousDeviceButtons.forEach((button)=>{
         button.addEventListener("click",showPreviousDeviceInNamespace);
     });
@@ -27,15 +32,15 @@ window.onload = function(){
 
     //bind update button
     let updateDeviceButtons = document.querySelectorAll(".updateDeviceButton");
-    console.log("update device buttons ==================================== ",updateDeviceButtons);
-    previousDeviceButtons.forEach((button)=>{
+    //console.log("update device buttons ==================================== ",updateDeviceButtons);
+    updateDeviceButtons.forEach((button)=>{
         button.addEventListener("click",updateDeviceInNamespace);
     });
 
     //bind each device field in order to enable update button on changing events
     let fields = document.querySelectorAll(".deviceField");
     fields.forEach((field)=>{
-        console.log("this field is binding to change *************************", field);
+        //console.log("this field is binding to change *************************", field);
         let namespace = field.getAttribute("namespace");
         let button = document.querySelector(`.updateDeviceButton[namespace="${namespace}"]`);
         if(button.disabled=true){
@@ -47,7 +52,7 @@ window.onload = function(){
     }); // end of fields.forEach field
 
     function enableUpdateButton(event){
-        console.log("enableUpdateButton called");
+        //console.log("enableUpdateButton called");
         let field = event.target;
         let namespace = field.getAttribute("namespace");
         let button = document.querySelector(`.updateDeviceButton[toBeEnabled="true"][namespace="${namespace}"]`);
@@ -69,14 +74,14 @@ function showNextDeviceInNamespace(event){
     let previousButton = document.querySelector(`.previousDeviceButton[namespace="${namespace}"]`);
     let actionButtonsNavigation = document.querySelector(`.action-buttons-navigation[namespace="${namespace}"]`);
     let visibleDeviceIndex = actionButtonsNavigation.getAttribute("visibleDeviceIndex");
-    let devices = document.querySelectorAll(`.device-contents[namespace="${namespace}"] .deviceItem`);
-    if( devices.length - 1 == +visibleDeviceIndex ) return false;
-    devices[visibleDeviceIndex].style.display = "none";
-    devices[++visibleDeviceIndex].style.display = "block";
+    let namespaceDevices = document.querySelectorAll(`.device-contents[namespace="${namespace}"] .deviceItem`);
+    if( namespaceDevices.length - 1 == +visibleDeviceIndex ) return false;
+    namespaceDevices[visibleDeviceIndex].style.display = "none";
+    namespaceDevices[++visibleDeviceIndex].style.display = "block";
     actionButtonsNavigation.setAttribute("visibleDeviceIndex",visibleDeviceIndex);
     previousButton.disabled = false;
-    if( visibleDeviceIndex == devices.length - 1 ){
-        console.log("disable button", button);
+    if( visibleDeviceIndex == namespaceDevices.length - 1 ){
+        //console.log("disable button", button);
         button.disabled = true;
     }
 }
@@ -89,14 +94,14 @@ function showPreviousDeviceInNamespace(event){
     let nextButton = document.querySelector(`.nextDeviceButton[namespace="${namespace}"]`);
     let actionButtonsNavigation = document.querySelector(`.action-buttons-navigation[namespace="${namespace}"]`);
     let visibleDeviceIndex = actionButtonsNavigation.getAttribute("visibleDeviceIndex");
-    let devices = document.querySelectorAll(`.device-contents[namespace="${namespace}"] .deviceItem`);
+    let namespaceDevices = document.querySelectorAll(`.device-contents[namespace="${namespace}"] .deviceItem`);
     if( 0 == +visibleDeviceIndex ) return false;
-    devices[visibleDeviceIndex].style.display = "none";
-    devices[--visibleDeviceIndex].style.display = "block";
+    namespaceDevices[visibleDeviceIndex].style.display = "none";
+    namespaceDevices[--visibleDeviceIndex].style.display = "block";
     actionButtonsNavigation.setAttribute("visibleDeviceIndex",visibleDeviceIndex);
     nextButton.disabled = false;
     if( visibleDeviceIndex == 0 ){
-        console.log("disable button", button);
+        //console.log("disable button", button);
         button.disabled = true;
     }
 } // end of function showPreviousDeviceInNamespace
@@ -106,22 +111,94 @@ function updateDeviceInNamespace(event){
     event.preventDefault();
     let button = event.target;
     let namespace = button.getAttribute("namespace");
-    let updateButton = document.querySelector(`.updateDeviceButton[namespace="${namespace}"]`);
+    //let updateButton = document.querySelector(`.updateDeviceButton[namespace="${namespace}"]`);
     let actionButtonsNavigation = document.querySelector(`.action-buttons-navigation[namespace="${namespace}"]`);
     let visibleDeviceIndex = actionButtonsNavigation.getAttribute("visibleDeviceIndex");
-    let devices = document.querySelectorAll(`.device-contents[namespace="${namespace}"] .deviceItem`);
-    let device = devices[visibleDeviceIndex];
-    let deviceId = device.getAttribute("deviceId");
+    let namespaceDevices = document.querySelectorAll(`.device-contents[namespace="${namespace}"] .deviceItem`);
+    let device = namespaceDevices[visibleDeviceIndex];
+    let deviceId = namespaceDevices[visibleDeviceIndex].getAttribute("deviceId");
     //get through each attribute of device to check what's changed
+    let updateBatch = [];
     let fields = device.querySelectorAll(`.deviceField`);
-    console.log('fields = ',fields)
+    console.log('fields ======================= ',fields);
+    fields.forEach((field)=>{
+        let originalValue = field.getAttribute("originalValue");
+        let newValue = field.value;
+        let contentType = field.getAttribute("contentType");
+        switch(contentType){
+            case "currency":
+                newValue = parseFloat(newValue.replace("$","")).toFixed(2);
+                originalValue = parseFloat(originalValue).toFixed(2);
+            break;
+            case "flag":
+                newValue = field.checked == true ? 1 : 0;
+            break;
+            case "boolean":
+                newValue = field.checked == true ? 1 : 0;
+            break;
+            case "stringSelect":
+                newValue = newValue.toLowerCase() == originalValue.toLowerCase() ? originalValue : newValue;
+            break;
+            default:
+                newValue = field.value;
+        } // end of switch newValue
+
+        if(originalValue==newValue) return false;
+
+        updateBatch.push({
+            "id" : deviceId,
+            "for" : field.getAttribute("for"),
+            "value" : newValue
+        });
+
+    }); // end of field.forEach
+    
+    // find object to update on deviceObjects array
+    // for each element of update
+    updateBatch.forEach((updateElement)=>{
+        let deviceId = +updateElement.id;
+        let objectToUpdate = deviceObjects[namespace].find((device)=>device._id==deviceId);
+        console.log("objectToUpdate =>", objectToUpdate);
+        objectToUpdate[updateElement.for].value = updateElement.value;
+        console.log("objectUpdated =>", objectToUpdate);
+
+        //update in database
+        let deviceToUpdate = devices.find((device)=>device.id==deviceId);
+        console.log("deviceToUpdate =>", deviceToUpdate);
+        deviceToUpdate[(updateElement.for).replace("_","")] = updateElement.value;
+        console.log("deviceUpdated =>" , deviceToUpdate);
+
+        //persistence of data
+        localStorage.setItem("devices", JSON.stringify(devices));
+
+    });
+
+    // disable the update button
+    button.disabled = true;
+
+    // indicate to user the data was updated
+    messageUser("SUCCESS", "The contents were updated with success");
+
+
 
 } // end of function updateDeviceInNamespace
 
+function messageUser(title,message){
+    let options = {
+        "keyboard":true,
+        "focus":true,
+        "show":true
+    };
+    document.getElementById("userMessageModalTitle").innerHTML = title;
+    document.getElementById("userMessageModalBody").innerHTML = message;
+    document.getElementById("userMessageModalTrigger").click();
+
+}
+
 function initialize(){
 
-    let deviceObjects = [];
-    let namespaces = [];
+    console.log("devices inside initialize() => ", devices);
+
 
     //get namespaces
     devices.forEach((element)=>{
@@ -143,8 +220,8 @@ function initialize(){
         }
     });//end of devices.forEach((element)
 
-    console.log("namespaces:",namespaces);
-    console.log("deviceObjects",deviceObjects);
+    //console.log("namespaces:",namespaces);
+    //console.log("deviceObjects",deviceObjects);
 
     // build html markup for device class cards
     let deviceRowMarkup = namespaces.reduce((acc,current)=>(acc + buildDeviceCard(current)),"");
@@ -153,11 +230,11 @@ function initialize(){
 
     // build dom components for contents of each class
     // iterate for each class
-    console.log("namespaces function:",namespaces);
+   // console.log("namespaces function:",namespaces);
     namespaces.forEach((namespace)=>{
-        console.log("mapping namespace===========================================");
+        //console.log("mapping namespace===========================================");
         let devices = deviceObjects[namespace.name];
-        console.log(`devices for namespace ${namespace.name}:`,devices);
+        //console.log(`devices for namespace ${namespace.name}:`,devices);
 
         // set up how navigation buttons will be enabled
         let previousButton = document.querySelector(`.previousDeviceButton[namespace="${namespace.name}"]`);
@@ -180,10 +257,10 @@ function initialize(){
         card.appendChild(row);
 
         devices.forEach((device)=>{
-            console.log("inside devices foreach - device is :",device);
+            //console.log("inside devices foreach - device is :",device);
 
-            let id = device._id;
-            console.log("id = ",id);
+            let id = device.id;
+            //console.log("id = ",id);
 
             let column = document.createElement("div");
             column.classList.add("col-12","text-center","device-window","deviceItem");
@@ -197,8 +274,8 @@ function initialize(){
 
             for(let attr in device){
                 
-                console.log("attr>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-                console.log("attr = ",attr);
+                //console.log("attr>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+                //console.log("attr = ",attr);
 
                 if(device[attr].name===undefined) continue;
                 
@@ -207,13 +284,13 @@ function initialize(){
                 let type = device[attr].type;
                 let possibleValues = device[attr].possibleValues;
 
-                console.log("form inside attr for before field append:",form);
+                //console.log("form inside attr for before field append:",form);
 
                 let field = document.createElement("div");
                 field.setAttribute("deviceId",id);
                 form.appendChild(field);
 
-                console.log("form inside attr for after field append:",form);
+                //console.log("form inside attr for after field append:",form);
 
                 let input = document.createElement("input");
                 let select = document.createElement("select");
@@ -228,6 +305,7 @@ function initialize(){
                         input.setAttribute("namespace",namespace.name);
                         input.setAttribute("originalValue",value);
                         input.setAttribute("for",attr);
+                        input.setAttribute("contentType","flag");
                         input.classList.add("custom-control-input");
                         input.classList.add("deviceField");
                         input.id = attr+"Switch"+id;
@@ -250,6 +328,7 @@ function initialize(){
                         input.setAttribute("namespace",namespace.name);
                         input.setAttribute("originalValue",value);
                         input.setAttribute("for",attr);
+                        input.setAttribute("contentType","boolean");
                         input.classList.add("custom-control-input");
                         input.classList.add("deviceField");
                         input.id = attr+"Switch"+id;
@@ -276,6 +355,7 @@ function initialize(){
                         input.setAttribute("namespace",namespace.name);
                         input.setAttribute("originalValue",value);
                         input.setAttribute("for",attr);
+                        input.setAttribute("contentType","string");
                         input.classList.add("form-control");
                         input.classList.add("deviceField");
                         input.id = attr+"Input"+id;
@@ -294,6 +374,7 @@ function initialize(){
                         input.setAttribute("namespace",namespace.name);
                         input.setAttribute("originalValue",value);
                         input.setAttribute("for",attr);
+                        input.setAttribute("contentType","flag");
                         input.classList.add("form-control");
                         input.classList.add("deviceField");
                         input.id = attr+"Input"+id;
@@ -307,11 +388,13 @@ function initialize(){
                         label.innerHTML = name;
                         field.appendChild(label);
                         select.classList.add("form-control");
+                        select.classList.add("deviceField");
                         select.id = attr+"Select"+id;
                         select.setAttribute("deviceId",id);
                         select.setAttribute("namespace",namespace.name);
                         select.setAttribute("originalValue",value);
                         select.setAttribute("for",attr);
+                        select.setAttribute("contentType","stringSelect");
                         let option = document.createElement("option");
                         option.value = "";
                         option.innerHTML = 'choose ' + name.toLowerCase();
@@ -339,6 +422,7 @@ function initialize(){
                         input.setAttribute("namespace",namespace.name);
                         input.setAttribute("originalValue",value);
                         input.setAttribute("for",attr);
+                        input.setAttribute("contentType","currency");
                         input.classList.add("form-control");
                         input.classList.add("deviceField");
                         input.id = attr+"Input"+id;
@@ -352,23 +436,25 @@ function initialize(){
             
         }); // end of devices.forEach((device)
 
-        console.log("card = ",card);
+        //console.log("card = ",card);
 
     }); // end of namespaces.forEach((namespace)
 
     //show the first element on each namespace
     namespaces = document.querySelectorAll(".device-contents");
-    console.log(namespaces);
+    //console.log(namespaces);
 
     namespaces.forEach((namespace)=>{
 
-        let devices = namespace.querySelectorAll(".device-window");
-        console.log("device:",devices);
+        let namespaceDevices = namespace.querySelectorAll(".device-window");
+        //console.log("device:",devices);
 
-        console.log(devices[0]);
-        devices[0].style.display = "block";
+        //console.log(devices[0]);
+        namespaceDevices[0].style.display = "block";
 
     });
+
+    console.log("devices at end of initialize = ", devices);
 
 } // end of initialize
 

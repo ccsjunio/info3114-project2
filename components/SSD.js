@@ -2,8 +2,8 @@ import { DiskDevice } from "/components/DiskDevice.js";
 
 export class SSD extends DiskDevice{
 
-    constructor(id,status,replacementCost,supplierName,serialNumber,size,transferRate,type,wearLeveling){
-        super(id,status,replacementCost,supplierName,serialNumber,size,transferRate);
+    constructor(id,status,replacementCost,supplierName,serialNumber,size,transferRate,type,wearLeveling,update){
+        super(id,status,replacementCost,supplierName,serialNumber,size,transferRate,update);
         this._type = {
             name: "Type",
             value: type,
