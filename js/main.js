@@ -175,6 +175,7 @@ function updateDeviceInNamespace(event){
 
     // disable the update button
     button.disabled = true;
+    button.setAttribute("toBeEnabled",true);
 
     // indicate to user the data was updated
     messageUser("SUCCESS", "The contents were updated with success");
