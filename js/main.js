@@ -374,7 +374,7 @@ function initialize(){
                         input.setAttribute("namespace",namespace.name);
                         input.setAttribute("originalValue",value);
                         input.setAttribute("for",attr);
-                        input.setAttribute("contentType","flag");
+                        input.setAttribute("contentType","integer");
                         input.classList.add("form-control");
                         input.classList.add("deviceField");
                         input.id = attr+"Input"+id;
