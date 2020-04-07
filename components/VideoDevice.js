@@ -2,7 +2,7 @@ import { Device } from "/components/Device.js";
 
 export class VideoDevice extends Device{
 
-    constructor(id,status,replacementCost,supplierName,serialNumber,resolution,type,update){
+    constructor(id=null,status=null,replacementCost=null,supplierName=null,serialNumber=null,resolution=null,type=null,update=null){
         super(id,status,replacementCost,supplierName,serialNumber,update);
         this._resolution = {
             name: "Resolution",

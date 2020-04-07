@@ -29,6 +29,10 @@ window.onload = function(){
     });
 
     //bind new button
+    let newDeviceButtons = document.querySelectorAll(".newDeviceButton");
+    newDeviceButtons.forEach((button)=>{
+        button.addEventListener("click",newDeviceToNamespace);
+    })
 
     //bind update button
     let updateDeviceButtons = document.querySelectorAll(".updateDeviceButton");
@@ -184,6 +188,89 @@ function updateDeviceInNamespace(event){
 
 } // end of function updateDeviceInNamespace
 
+function newDeviceToNamespace(event){
+    event.stopPropagation();
+    event.preventDefault();
+    let button = event.target;
+    let namespace = button.getAttribute("namespace");
+    // let updateButton = document.querySelector(`.updateDeviceButton[namespace="${namespace}"]`);
+    let actionButtonsNavigation = document.querySelector(`.action-buttons-navigation[namespace="${namespace}"]`);
+    // add new device markup to namespace
+    addNewDeviceMarkupToNamespace(namespace);
+    //continue here
+    return false;
+    //continue here
+
+
+    let visibleDeviceIndex = actionButtonsNavigation.getAttribute("visibleDeviceIndex");
+    let namespaceDevices = document.querySelectorAll(`.device-contents[namespace="${namespace}"] .deviceItem`);
+    let device = namespaceDevices[visibleDeviceIndex];
+    let deviceId = namespaceDevices[visibleDeviceIndex].getAttribute("deviceId");
+    //get through each attribute of device to check what's changed
+    let updateBatch = [];
+    let fields = device.querySelectorAll(`.deviceField`);
+    console.log('fields ======================= ',fields);
+    fields.forEach((field)=>{
+        let originalValue = field.getAttribute("originalValue");
+        let newValue = field.value;
+        let contentType = field.getAttribute("contentType");
+        switch(contentType){
+            case "currency":
+                newValue = parseFloat(newValue.replace("$","")).toFixed(2);
+                originalValue = parseFloat(originalValue).toFixed(2);
+            break;
+            case "flag":
+                newValue = field.checked == true ? 1 : 0;
+            break;
+            case "boolean":
+                newValue = field.checked == true ? 1 : 0;
+            break;
+            case "stringSelect":
+                newValue = newValue.toLowerCase() == originalValue.toLowerCase() ? originalValue : newValue;
+            break;
+            default:
+                newValue = field.value;
+        } // end of switch newValue
+
+        if(originalValue==newValue) return false;
+
+        updateBatch.push({
+            "id" : deviceId,
+            "for" : field.getAttribute("for"),
+            "value" : newValue
+        });
+
+    }); // end of field.forEach
+    
+    // find object to update on deviceObjects array
+    // for each element of update
+    updateBatch.forEach((updateElement)=>{
+        let deviceId = +updateElement.id;
+        let objectToUpdate = deviceObjects[namespace].find((device)=>device._id==deviceId);
+        console.log("objectToUpdate =>", objectToUpdate);
+        objectToUpdate[updateElement.for].value = updateElement.value;
+        console.log("objectUpdated =>", objectToUpdate);
+
+        //update in database
+        let deviceToUpdate = devices.find((device)=>device.id==deviceId);
+        console.log("deviceToUpdate =>", deviceToUpdate);
+        deviceToUpdate[(updateElement.for).replace("_","")] = updateElement.value;
+        console.log("deviceUpdated =>" , deviceToUpdate);
+
+        //persistence of data
+        localStorage.setItem("devices", JSON.stringify(devices));
+
+    });
+
+    // disable the update button
+    button.disabled = true;
+    button.setAttribute("toBeEnabled",true);
+
+    // indicate to user the data was updated
+    messageUser("SUCCESS", "The contents were updated with success");
+
+} // end of function newDeviceToNamespace
+
 function messageUser(title,message){
     let options = {
         "keyboard":true,
@@ -231,7 +318,7 @@ function initialize(){
 
     // build dom components for contents of each class
     // iterate for each class
-   // console.log("namespaces function:",namespaces);
+    // console.log("namespaces function:",namespaces);
     namespaces.forEach((namespace)=>{
         //console.log("mapping namespace===========================================");
         let devices = deviceObjects[namespace.name];
@@ -459,5 +546,259 @@ function initialize(){
 
 } // end of initialize
 
+function addNewDeviceMarkupToNamespace(namespace){
+    
+    // setup a new instance of the device according to namespace
+    let device;
+    switch(namespace){
+        case "videoDevice":
+            device = new VideoDevice;
+        break;
+        case "hardDisk":
+            device = new HardDisk;
+        break;
+        case "ssd":
+            device = new SSD;
+        break;
+    }
 
+    // set up how navigation buttons will be enabled
+    let newButton = document.querySelector(`.newDeviceButton[namespace="${namespace}"]`);
+    // disable new device button so that no other functions with overlap
+    newButton.disabled = true; 
 
+    // select the card that is the container for the devices in the namespace
+    //let card = document.querySelector(`.card[namespace='${namespace}'] .device-contents`);
+
+    // each bootstrap row contains columns that are devices inside the namespace
+    let row = document.querySelector(`.card[namespace='${namespace}'] .device-contents .row`);
+
+        //console.log("inside devices foreach - device is :",device);
+
+        // the provisory id for the device will be "new"
+        // this will be changed only after the user fill the
+        // fields and save the new device
+        let id = "new";
+        //console.log("id = ",id);
+
+        // each column is a field
+        let column = document.createElement("div");
+        column.classList.add("col-12","text-center","device-window","deviceItem");
+        column.setAttribute("deviceId",id);
+        column.setAttribute("namespace",namespace.name);
+        column.style.display = "none";
+        row.insertBefore(column,row.childNodes[0]);
+
+        let form = document.createElement("form");
+        column.appendChild(form);
+
+        console.log("device = ", device);
+
+        for(let attr in device){
+
+            console.log("attr = ", attr);
+
+            if(device[attr]===null) continue;
+            if(device[attr].name===undefined) continue;
+            
+            let name = device[attr].name;
+            let value = device[attr].value;
+            let type = device[attr].type;
+            let possibleValues = device[attr].possibleValues;
+
+            //console.log("form inside attr for before field append:",form);
+            let field = document.createElement("div");
+            field.setAttribute("deviceId",id);
+            form.appendChild(field);
+
+            //console.log("form inside attr for after field append:",form);
+            let input = document.createElement("input");
+            let select = document.createElement("select");
+            let label = document.createElement("label");
+
+            switch(type){
+
+                case "flag":
+                    field.classList.add("custom-control","custom-switch","text-left");
+                    input.setAttribute("type","checkbox");
+                    input.setAttribute("deviceId",id);
+                    input.setAttribute("namespace",namespace);
+                    input.setAttribute("originalValue",value);
+                    input.setAttribute("for",attr);
+                    input.setAttribute("contentType","flag");
+                    input.classList.add("custom-control-input");
+                    input.classList.add("deviceField");
+                    input.id = attr+"Switch"+id;
+                    if(value===0){
+                        input.removeAttribute("checked");
+                    } else if (value===1){
+                        input.setAttribute("checked","checked");
+                    }
+                    field.appendChild(input);
+                    label.classList.add("custom-control-label");
+                    label.setAttribute("for",attr+"Switch"+id);
+                    label.innerHTML = name;
+                    field.appendChild(label);
+                break;
+
+                case "boolean":
+                    field.classList.add("custom-control","custom-switch","text-left");
+                    input.setAttribute("type","checkbox");
+                    input.setAttribute("deviceId",id);
+                    input.setAttribute("namespace",namespace);
+                    input.setAttribute("originalValue",value);
+                    input.setAttribute("for",attr);
+                    input.setAttribute("contentType","boolean");
+                    input.classList.add("custom-control-input");
+                    input.classList.add("deviceField");
+                    input.id = attr+"Switch"+id;
+                    if(!value){
+                        input.removeAttribute("checked");
+                    } else if (value){
+                        input.setAttribute("checked","checked");
+                    }
+                    field.appendChild(input);
+                    label.classList.add("custom-control-label");
+                    label.setAttribute("for",attr+"Switch"+id);
+                    label.innerHTML = name;
+                    field.appendChild(label);
+                break;
+
+                case "string":
+                    field.classList.add("form-group", "text-left");
+                    label.setAttribute("for",attr+"Input"+id);
+                    label.innerHTML = name;
+                    field.appendChild(label);
+                    input.setAttribute("type","text");
+                    input.setAttribute("placeholder","0.00");
+                    input.setAttribute("deviceId",id);
+                    input.setAttribute("namespace",namespace);
+                    input.setAttribute("originalValue",value);
+                    input.setAttribute("for",attr);
+                    input.setAttribute("contentType","string");
+                    input.classList.add("form-control");
+                    input.classList.add("deviceField");
+                    input.id = attr+"Input"+id;
+                    input.value = value;
+                    field.appendChild(input);
+                break;
+
+                case "integer":
+                    field.classList.add("form-group", "text-left");
+                    label.setAttribute("for",attr+"Input"+id);
+                    label.innerHTML = name;
+                    field.appendChild(label);
+                    input.setAttribute("type","number");
+                    input.setAttribute("placeholder","0");
+                    input.setAttribute("deviceId",id);
+                    input.setAttribute("namespace",namespace);
+                    input.setAttribute("originalValue",value);
+                    input.setAttribute("for",attr);
+                    input.setAttribute("contentType","integer");
+                    input.classList.add("form-control");
+                    input.classList.add("deviceField");
+                    input.id = attr+"Input"+id;
+                    input.value = value;
+                    field.appendChild(input);
+                break;
+
+                case "stringSelect":
+                    field.classList.add("form-group", "text-left");
+                    label.setAttribute("for",attr+"Select"+id);
+                    label.innerHTML = name;
+                    field.appendChild(label);
+                    select.classList.add("form-control");
+                    select.classList.add("deviceField");
+                    select.id = attr+"Select"+id;
+                    select.setAttribute("deviceId",id);
+                    select.setAttribute("namespace",namespace);
+                    select.setAttribute("originalValue",value);
+                    select.setAttribute("for",attr);
+                    select.setAttribute("contentType","stringSelect");
+                    let option = document.createElement("option");
+                    option.value = "";
+                    option.innerHTML = 'choose ' + name.toLowerCase();
+                    select.appendChild(option);
+                    possibleValues.forEach((element)=>{
+                        let option = document.createElement("option");
+                        select.appendChild(option);
+                        option.value = element.toLowerCase();
+                        option.innerHTML = element;
+                    });
+                    field.appendChild(select);
+                break;
+
+                case "currency":
+                    field.classList.add("form-group", "text-left");
+                    label.setAttribute("for",attr+"Input"+id);
+                    label.innerHTML = name;
+                    field.appendChild(label);
+                    input.setAttribute("type","text");
+                    input.setAttribute("placeholder","0.00");
+                    input.setAttribute("deviceId",id);
+                    input.setAttribute("namespace",namespace);
+                    input.setAttribute("originalValue",value);
+                    input.setAttribute("for",attr);
+                    input.setAttribute("contentType","currency");
+                    input.classList.add("form-control");
+                    input.classList.add("deviceField");
+                    input.id = attr+"Input"+id;
+                    input.value = toCurrency(value);
+                    field.appendChild(input);
+                break;
+
+            } // end of switch
+
+        }// end of for(let attr in device)
+
+        // add a save button
+        let newDeviceActionButtons = document.createElement("div");
+        form.appendChild(newDeviceActionButtons);
+        newDeviceActionButtons.classList.add("row", "form-group");
+        
+        let saveButtonColumn = document.createElement("div");
+        newDeviceActionButtons.appendChild(saveButtonColumn);
+
+        let cancelSaveButtonColumn = document.createElement("div");
+        newDeviceActionButtons.appendChild(cancelSaveButtonColumn);
+
+        let saveButton = document.createElement("button");
+        saveButtonColumn.appendChild(saveButton);
+        saveButton.classList.add("btn", "btn-success", "saveNewDeviceButton");
+        saveButton.value = "save new device";
+        saveButton.innerHTML = "save";
+        saveButton.setAttribute("namespace",namespace);
+        saveButton.setAttribute("id","new");
+        saveButton.addEventListener("click", saveNewDevice);
+
+        let cancelSaveButton = document.createElement("button");
+        cancelSaveButtonColumn.appendChild(cancelSaveButton);
+        cancelSaveButton.classList.add("btn", "btn-danger", "cancelSaveNewDeviceButton");
+        cancelSaveButton.value = "cancel saving new device";
+        cancelSaveButton.innerHTML = "cancel";
+        cancelSaveButton.setAttribute("namespace",namespace);
+        cancelSaveButton.setAttribute("id","new");
+        cancelSaveButton.addEventListener("click", cancelSaveNewDevice);
+        
+        
+    //console.log("card = ",card);
+
+    // disable all visibilities from namespace
+    row.childNodes.forEach((element)=>{
+        element.style.display = "none";
+    })
+    row.childNodes[0].style.display = "block";
+
+} // end of addNewDeviceToNamespace
+
+function saveNewDevice(event){
+    event.preventDefault();
+    let button = event.target;
+    console.log("clicked to save new device");
+}
+
+function cancelSaveNewDevice(event){
+    event.preventDefault();
+    let button = event.target;
+    console.log("clicked to cancel save new device");
+}
