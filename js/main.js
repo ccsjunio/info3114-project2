@@ -592,7 +592,7 @@ function addNewDeviceMarkupToNamespace(namespace){
         let form = document.createElement("form");
         column.appendChild(form);
 
-        console.log("device = ", device);
+        console.log("device on new device = ", device);
 
         for(let attr in device){
 
@@ -623,7 +623,7 @@ function addNewDeviceMarkupToNamespace(namespace){
                     input.setAttribute("type","checkbox");
                     input.setAttribute("deviceId",id);
                     input.setAttribute("namespace",namespace);
-                    input.setAttribute("originalValue",value);
+                    input.setAttribute("originalValue",0);
                     input.setAttribute("for",attr);
                     input.setAttribute("contentType","flag");
                     input.classList.add("custom-control-input");
@@ -646,7 +646,7 @@ function addNewDeviceMarkupToNamespace(namespace){
                     input.setAttribute("type","checkbox");
                     input.setAttribute("deviceId",id);
                     input.setAttribute("namespace",namespace);
-                    input.setAttribute("originalValue",value);
+                    input.setAttribute("originalValue",false);
                     input.setAttribute("for",attr);
                     input.setAttribute("contentType","boolean");
                     input.classList.add("custom-control-input");
@@ -670,7 +670,7 @@ function addNewDeviceMarkupToNamespace(namespace){
                     label.innerHTML = name;
                     field.appendChild(label);
                     input.setAttribute("type","text");
-                    input.setAttribute("placeholder","0.00");
+                    input.setAttribute("placeholder","write the " + name);
                     input.setAttribute("deviceId",id);
                     input.setAttribute("namespace",namespace);
                     input.setAttribute("originalValue",value);
@@ -679,7 +679,7 @@ function addNewDeviceMarkupToNamespace(namespace){
                     input.classList.add("form-control");
                     input.classList.add("deviceField");
                     input.id = attr+"Input"+id;
-                    input.value = value;
+                    input.value = "";
                     field.appendChild(input);
                 break;
 
@@ -698,7 +698,7 @@ function addNewDeviceMarkupToNamespace(namespace){
                     input.classList.add("form-control");
                     input.classList.add("deviceField");
                     input.id = attr+"Input"+id;
-                    input.value = value;
+                    input.value = 0;
                     field.appendChild(input);
                 break;
 
@@ -758,9 +758,11 @@ function addNewDeviceMarkupToNamespace(namespace){
         
         let saveButtonColumn = document.createElement("div");
         newDeviceActionButtons.appendChild(saveButtonColumn);
+        saveButtonColumn.classList.add("col-6", "text-center");
 
         let cancelSaveButtonColumn = document.createElement("div");
         newDeviceActionButtons.appendChild(cancelSaveButtonColumn);
+        cancelSaveButtonColumn.classList.add("col-6", "text-center");
 
         let saveButton = document.createElement("button");
         saveButtonColumn.appendChild(saveButton);
@@ -788,6 +790,13 @@ function addNewDeviceMarkupToNamespace(namespace){
         element.style.display = "none";
     })
     row.childNodes[0].style.display = "block";
+
+    // disable all navigation and data buttons for the namespace
+    let navigationButtons = document.querySelectorAll(`.action-buttons-navigation[namespace='${namespace}'] button`);
+    let dataButtons = document.querySelectorAll(`.action-buttons-data[namespace='${namespace}'] button`);
+
+    navigationButtons.forEach((button)=>button.disabled = true);
+    dataButtons.forEach((button)=>button.disabled=true);
 
 } // end of addNewDeviceToNamespace
 

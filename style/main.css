@@ -24,3 +24,7 @@
 .device-window{
     display: none;
 }
+
+#userMessageModalTrigger{
+    display:none;
+}
