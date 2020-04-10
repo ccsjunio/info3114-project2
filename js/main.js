@@ -1,4 +1,5 @@
 import { devices } from "/database/devices.js";
+import { namespaces } from "/database/namespaces.js";
 import { buildDeviceCard } from "/templates/deviceCard.js";
 import { VideoDevice } from "/components/VideoDevice.js";
 import { HardDisk } from "/components/HardDisk.js";
@@ -6,7 +7,8 @@ import { SSD } from "/components/SSD.js";
 import { toCurrency, createUniqueId } from "/utils/custom-functions.js";
 
 let deviceObjects = [];
-let namespaces = [];
+
+console.log("namespaces = ", namespaces);
 
 window.onload = function(){
     
@@ -44,6 +46,10 @@ window.onload = function(){
     bindFieldsToChangeEvent();
 
     //bind delete button
+    let deleteDeviceButtons = document.querySelectorAll(".deleteDeviceButton");
+    deleteDeviceButtons.forEach((button)=>{
+        button.addEventListener("click",deleteDeviceFromNamespace);
+    });
     
 }
 
@@ -174,9 +180,9 @@ function newDeviceToNamespace(event){
     let actionButtonsNavigation = document.querySelector(`.action-buttons-navigation[namespace="${namespace}"]`);
     // add new device markup to namespace
     addNewDeviceMarkupToNamespace(namespace);
-    return false;
+    return true;
 
-
+/*
     let visibleDeviceIndex = actionButtonsNavigation.getAttribute("visibleDeviceIndex");
     let namespaceDevices = document.querySelectorAll(`.device-contents[namespace="${namespace}"] .deviceItem`);
     let device = namespaceDevices[visibleDeviceIndex];
@@ -243,6 +249,7 @@ function newDeviceToNamespace(event){
 
     // indicate to user the data was updated
     messageUser("SUCCESS", "The contents were updated with success");
+    */
 
 } // end of function newDeviceToNamespace
 
@@ -273,13 +280,20 @@ function askUserYesNo(title,message){
 function initialize(){
 
     console.log("devices inside initialize() => ", devices);
+    console.log("deviceObjects = ", deviceObjects);
+    console.log("namespaces", namespaces);
 
+    //load namespaces to deviceObjects
+    namespaces.forEach((namespace)=>{
+        if(deviceObjects[namespace.name] === undefined){
+            deviceObjects[namespace.name] = [];
+        }
+    });
 
     //get namespaces
     devices.forEach((element)=>{
         if(namespaces.find((item)=>item.name===element.namespace.name)===undefined){
             namespaces.push(element.namespace);
-            deviceObjects[element.namespace.name] = [];
         }
 
         switch(element.namespace.name){
@@ -295,9 +309,6 @@ function initialize(){
         }
     });//end of devices.forEach((element)
 
-    //console.log("namespaces:",namespaces);
-    //console.log("deviceObjects",deviceObjects);
-
     // build html markup for device class cards
     let deviceRowMarkup = namespaces.reduce((acc,current)=>(acc + buildDeviceCard(current)),"");
     let deviceRow = document.getElementById("device-row");
@@ -307,10 +318,11 @@ function initialize(){
     // iterate for each class
     // console.log("namespaces function:",namespaces);
     namespaces.forEach((namespace)=>{
-        //console.log("mapping namespace===========================================");
         let devices = deviceObjects[namespace.name];
-        //console.log(`devices for namespace ${namespace.name}:`,devices);
 
+        // if there are no devices for this namespace go to the next namespace
+        if(devices===undefined) return;
+        
         // set up how navigation buttons will be enabled
         let previousButton = document.querySelector(`.previousDeviceButton[namespace="${namespace.name}"]`);
         let nextButton = document.querySelector(`.nextDeviceButton[namespace="${namespace.name}"]`);
@@ -332,10 +344,8 @@ function initialize(){
         card.appendChild(row);
 
         devices.forEach((device)=>{
-            //console.log("inside devices foreach - device is :",device);
 
             let id = device.id;
-            //console.log("id = ",id);
 
             let column = document.createElement("div");
             column.classList.add("col-12","text-center","device-window","deviceItem");
@@ -516,13 +526,15 @@ function initialize(){
     }); // end of namespaces.forEach((namespace)
 
     //show the first element on each namespace
-    namespaces = document.querySelectorAll(".device-contents");
+    let namespacesMarkup = document.querySelectorAll(".device-contents");
     //console.log(namespaces);
 
-    namespaces.forEach((namespace)=>{
+    namespacesMarkup.forEach((namespace)=>{
 
         let namespaceDevices = namespace.querySelectorAll(".device-window");
         //console.log("device:",devices);
+
+        if(namespaceDevices.length==0 || namespaceDevices===undefined) return;
 
         //console.log(devices[0]);
         namespaceDevices[0].style.display = "block";
@@ -559,6 +571,11 @@ function addNewDeviceMarkupToNamespace(namespace){
 
     // each bootstrap row contains columns that are devices inside the namespace
     let row = document.querySelector(`.card[namespace='${namespace}'] .device-contents .row`);
+    if(row===null){
+        row = document.createElement("div");
+        row.classList.add("row");
+        document.querySelector(`.card[namespace='${namespace}'] .device-contents`).appendChild(row);
+    }
 
         //console.log("inside devices foreach - device is :",device);
 
@@ -936,6 +953,7 @@ function cancelSaveNewDevice(event){
 
 function resetDevicesShowInNamespace(namespace){
     let devices = document.querySelectorAll(`.deviceItem[namespace="${namespace}"]`);
+    if(devices[0]===undefined) return;
     devices[0].style.display = "block";
     resetNavigationButtonsInNamespace(namespace);
     resetDataButtonsInNamespace(namespace);
@@ -946,9 +964,9 @@ function resetNavigationButtonsInNamespace(namespace){
     let devices = document.querySelectorAll(`.deviceItem[namespace="${namespace}"]`);
     let previousButton = document.querySelector(`button.previousDeviceButton[namespace='${namespace}']`);
     let nextButton = document.querySelector(`button.nextDeviceButton[namespace='${namespace}']`);
-    if(devices.length<1){
-        previousButton.true = false;
-        nextButton.true = false;
+    if(devices.length<=1){
+        previousButton.disabled = true;
+        nextButton.disabled = true;
         container.setAttribute("visibledeviceindex",0);
     } else {
         previousButton.disabled = true;
@@ -965,8 +983,8 @@ function resetDataButtonsInNamespace(namespace){
     let deleteDeviceButton = document.querySelector(`button.deleteDeviceButton[namespace='${namespace}']`);
 
     newDeviceButton.disabled = false;
-    updateDeviceButton.disabled = true;
-    deleteDeviceButton.disabled = false;
+    updateDeviceButton.disabled = devices.length===0 ? true : false;
+    deleteDeviceButton.disabled = devices.length===0 ? true : false;
     
 } // function resetNavigationButtonsInNamespace(namespace)
 
@@ -995,4 +1013,55 @@ function bindFieldsToChangeEvent(){
             button.removeAttribute("toBeEnabled");
         }
     }
+} // function bindFieldsToChangeEvent()
+
+function deleteDeviceFromNamespace(event){
+    let button = event.target;
+    let namespace = button.getAttribute("namespace");
+
+    // confirm that the user really wants to delete the device
+    askUserYesNo("Delete this device", "Are you sure you want to delete this device? All information will be permanently be erased!");
+
+    let askUserYesNoModal = document.getElementById("askUserYesNoModal");
+    let buttonCancel = askUserYesNoModal.querySelector("button#answerCancel");
+    let buttonYes = askUserYesNoModal.querySelector("button#answerYes");
+    let buttonClose = askUserYesNoModal.querySelector('button.close');
+
+    buttonCancel.addEventListener("click",(event)=>{
+        console.log("clicked on close - do not delete the device");
+        // nothing to do here
+    });
+
+    buttonYes.addEventListener("click",(event)=>{
+        console.log("clicked on yes - to delete the device");
+        let visibleDeviceIndex = document.querySelector(`.action-buttons-navigation[namespace='${namespace}']`).getAttribute("visibleDeviceIndex");
+        let devicesInNamespace = document.querySelectorAll(`.device-contents[namespace='${namespace}'] .deviceItem`);
+        if(devicesInNamespace[visibleDeviceIndex]===undefined) return;
+        let deviceId = devicesInNamespace[visibleDeviceIndex].getAttribute("deviceId");
+        //reset from devices array
+        let indexOfDeviceToRemoveFromDevices = devices.findIndex((device)=>device.id==deviceId);
+        devices.splice(indexOfDeviceToRemoveFromDevices,1);
+        //reset from deviceObjects array
+        console.log("deviceObjects=",deviceObjects);
+        console.log("devices=",devices);
+        let indexOfDeviceToRemoveFromDevicesObjects = deviceObjects[namespace].findIndex((device)=>device._id==deviceId);
+        deviceObjects.splice(indexOfDeviceToRemoveFromDevicesObjects,1);
+        //reset on local storage
+        localStorage.setItem("devices", JSON.stringify(devices));
+        //remove index from namespace markup
+        devicesInNamespace[visibleDeviceIndex].remove();
+        resetDevicesShowInNamespace(namespace);
+        if(devicesInNamespace===undefined){
+            button.disabled.true;
+        }
+        //hide the modal
+        buttonClose.click();
+    });
+
+
+
+
+    
+
+
 }
