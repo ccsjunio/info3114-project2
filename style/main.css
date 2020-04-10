@@ -28,3 +28,7 @@
 #userMessageModalTrigger{
     display:none;
 }
+
+#askUserYesNoModal{
+    display: none;
+}

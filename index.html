@@ -32,7 +32,7 @@
     </div><!-- end of container -->
 
     <!-- Modal for messages to user -->
-    <!-- Button trigger modal -->
+    <!-- Button trigger modal message-->
     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#userMessageModal" id="userMessageModalTrigger">
       Launch demo modal
     </button>
@@ -52,6 +52,33 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal for asking user yes or no -->
+    <!-- Button trigger modal -->
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#askUserYesNoModal" id="askUserYesNoModalTrigger">
+      Launch demo modal
+    </button>
+
+    <!-- Modal -->
+    <div class="modal fade" id="askUserYesNoModal" tabindex="-1" role="dialog" aria-labelledby="askUserYesNoModalLabel" aria-hidden="true" id="askUserYesNoModal">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="askUserYesNoModalTitle">Modal title</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body" id="askUserYesNoModalBody">
+            ...
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal" id="answerCancel">Cancel</button>
+            <button type="button" class="btn btn-primary" id="answerYes">Yes</button>
           </div>
         </div>
       </div>
