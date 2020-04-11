@@ -1,3 +1,7 @@
+// this function builds the markup for
+// the skeleton of the namespace that will
+// contain the markups of the devices
+
 function buildDeviceCard(namespace){
     return `<div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 card-col">
         <div class="card" namespace="${namespace.name}">
