@@ -32,3 +32,7 @@
 #askUserYesNoModal{
     display: none;
 }
+
+#askUserYesNoModalTrigger{
+    display: none;
+}

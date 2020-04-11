@@ -36,15 +36,6 @@ export class Device {
         this._status = 0;
     }
 
-    // method to update attributes from this base class and all
-    // that inherit this method
-    update(updateBatch){
-        updateBatch.forEach((updateElement)=>{
-            this[updateElemen.for] = updateElement.value;
-        }); // end of updateBatch.foreach 
-        return true;
-    }
-
     get id(){
         return this._id;
     }
