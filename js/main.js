@@ -1,6 +1,9 @@
 import { devices } from "/database/devices.js";
 import { namespaces } from "/database/namespaces.js";
+import { messageUser, askUserYesNo } from "/utils/modals.js";
+import { resetDevicesShowInNamespace, resetNavigationButtonsInNamespace, resetDataButtonsInNamespace } from "/utils/markup-resets.js";
 import { buildDeviceCard } from "/templates/deviceCard.js";
+import { bindFieldsToChangeEvent, bindNavigationButtons} from "/utils/binders.js";
 import { VideoDevice } from "/components/VideoDevice.js";
 import { HardDisk } from "/components/HardDisk.js";
 import { SSD } from "/components/SSD.js";
@@ -10,25 +13,13 @@ let deviceObjects = [];
 
 console.log("namespaces = ", namespaces);
 
+/*
+*   Functions to be executed when the page finishes loading
+*/
 window.onload = function(){
     
-    console.log("devices at load = ", devices);
-
+    // call initialization procedures
     initialize();
-
-    //bind next button
-    let nextDeviceButtons = document.querySelectorAll(".nextDeviceButton");
-    //console.log("next device buttons ==================================== ",nextDeviceButtons);
-    nextDeviceButtons.forEach((button)=>{
-        button.addEventListener("click",showNextDeviceInNamespace);
-    });
-
-    //bind previous button
-    let previousDeviceButtons = document.querySelectorAll(".previousDeviceButton");
-    //console.log("previous device buttons ==================================== ",previousDeviceButtons);
-    previousDeviceButtons.forEach((button)=>{
-        button.addEventListener("click",showPreviousDeviceInNamespace);
-    });
 
     //bind new button
     let newDeviceButtons = document.querySelectorAll(".newDeviceButton");
@@ -43,239 +34,19 @@ window.onload = function(){
         button.addEventListener("click",updateDeviceInNamespace);
     });
 
-    bindFieldsToChangeEvent();
-
     //bind delete button
     let deleteDeviceButtons = document.querySelectorAll(".deleteDeviceButton");
     deleteDeviceButtons.forEach((button)=>{
         button.addEventListener("click",deleteDeviceFromNamespace);
     });
+
+    bindNavigationButtons();
+
+    bindFieldsToChangeEvent();
+
     
-}
-
-function showNextDeviceInNamespace(event){
-    event.stopPropagation();
-    event.preventDefault();
-    let button = event.target;
-    let namespace = button.getAttribute("namespace");
-    let previousButton = document.querySelector(`.previousDeviceButton[namespace="${namespace}"]`);
-    let actionButtonsNavigation = document.querySelector(`.action-buttons-navigation[namespace="${namespace}"]`);
-    let visibleDeviceIndex = actionButtonsNavigation.getAttribute("visibleDeviceIndex");
-    let namespaceDevices = document.querySelectorAll(`.device-contents[namespace="${namespace}"] .deviceItem`);
-    if( namespaceDevices.length - 1 == +visibleDeviceIndex ) return false;
-    namespaceDevices[visibleDeviceIndex].style.display = "none";
-    namespaceDevices[++visibleDeviceIndex].style.display = "block";
-    actionButtonsNavigation.setAttribute("visibleDeviceIndex",visibleDeviceIndex);
-    previousButton.disabled = false;
-    if( visibleDeviceIndex == namespaceDevices.length - 1 ){
-        //console.log("disable button", button);
-        button.disabled = true;
-    }
-}
-
-function showPreviousDeviceInNamespace(event){
-    event.stopPropagation();
-    event.preventDefault();
-    let button = event.target;
-    let namespace = button.getAttribute("namespace");
-    let nextButton = document.querySelector(`.nextDeviceButton[namespace="${namespace}"]`);
-    let actionButtonsNavigation = document.querySelector(`.action-buttons-navigation[namespace="${namespace}"]`);
-    let visibleDeviceIndex = actionButtonsNavigation.getAttribute("visibleDeviceIndex");
-    let namespaceDevices = document.querySelectorAll(`.device-contents[namespace="${namespace}"] .deviceItem`);
-    if( 0 == +visibleDeviceIndex ) return false;
-    namespaceDevices[visibleDeviceIndex].style.display = "none";
-    namespaceDevices[--visibleDeviceIndex].style.display = "block";
-    actionButtonsNavigation.setAttribute("visibleDeviceIndex",visibleDeviceIndex);
-    nextButton.disabled = false;
-    if( visibleDeviceIndex == 0 ){
-        //console.log("disable button", button);
-        button.disabled = true;
-    }
-} // end of function showPreviousDeviceInNamespace
-
-function updateDeviceInNamespace(event){
-    event.stopPropagation();
-    event.preventDefault();
-    let button = event.target;
-    let namespace = button.getAttribute("namespace");
-    //let updateButton = document.querySelector(`.updateDeviceButton[namespace="${namespace}"]`);
-    let actionButtonsNavigation = document.querySelector(`.action-buttons-navigation[namespace="${namespace}"]`);
-    let visibleDeviceIndex = actionButtonsNavigation.getAttribute("visibleDeviceIndex");
-    let namespaceDevices = document.querySelectorAll(`.device-contents[namespace="${namespace}"] .deviceItem`);
-    let device = namespaceDevices[visibleDeviceIndex];
-    let deviceId = namespaceDevices[visibleDeviceIndex].getAttribute("deviceId");
-    //get through each attribute of device to check what's changed
-    let updateBatch = [];
-    let fields = device.querySelectorAll(`.deviceField`);
-    console.log('fields ======================= ',fields);
-    fields.forEach((field)=>{
-        let originalValue = field.getAttribute("originalValue");
-        let newValue = field.value;
-        let contentType = field.getAttribute("contentType");
-        switch(contentType){
-            case "currency":
-                newValue = parseFloat(newValue.replace("$","")).toFixed(2);
-                originalValue = parseFloat(originalValue).toFixed(2);
-            break;
-            case "flag":
-                newValue = field.checked == true ? 1 : 0;
-            break;
-            case "boolean":
-                newValue = field.checked == true ? 1 : 0;
-            break;
-            case "stringSelect":
-                newValue = newValue.toLowerCase() == originalValue.toLowerCase() ? originalValue : newValue;
-            break;
-            default:
-                newValue = field.value;
-        } // end of switch newValue
-
-        if(originalValue==newValue) return false;
-
-        updateBatch.push({
-            "id" : deviceId,
-            "for" : field.getAttribute("for"),
-            "value" : newValue
-        });
-
-    }); // end of field.forEach
     
-    // find object to update on deviceObjects array
-    // for each element of update
-    updateBatch.forEach((updateElement)=>{
-        let deviceId = updateElement.id;
-        let objectToUpdate = deviceObjects[namespace].find((device)=>device._id==deviceId);
-        console.log("objectToUpdate =>", objectToUpdate);
-        objectToUpdate[updateElement.for].value = updateElement.value;
-        console.log("objectUpdated =>", objectToUpdate);
-
-        //update in database
-        let deviceToUpdate = devices.find((device)=>device.id==deviceId);
-        console.log("deviceToUpdate =>", deviceToUpdate);
-        deviceToUpdate[(updateElement.for).replace("_","")] = updateElement.value;
-        console.log("deviceUpdated =>" , deviceToUpdate);
-
-        //persistence of data
-        localStorage.setItem("devices", JSON.stringify(devices));
-
-    });
-
-    // disable the update button
-    button.disabled = true;
-    button.setAttribute("toBeEnabled",true);
-
-    // indicate to user the data was updated
-    messageUser("SUCCESS", "The contents were updated with success");
-
-
-
-} // end of function updateDeviceInNamespace
-
-function newDeviceToNamespace(event){
-    event.stopPropagation();
-    event.preventDefault();
-    let button = event.target;
-    let namespace = button.getAttribute("namespace");
-    // let updateButton = document.querySelector(`.updateDeviceButton[namespace="${namespace}"]`);
-    let actionButtonsNavigation = document.querySelector(`.action-buttons-navigation[namespace="${namespace}"]`);
-    // add new device markup to namespace
-    addNewDeviceMarkupToNamespace(namespace);
-    return true;
-
-/*
-    let visibleDeviceIndex = actionButtonsNavigation.getAttribute("visibleDeviceIndex");
-    let namespaceDevices = document.querySelectorAll(`.device-contents[namespace="${namespace}"] .deviceItem`);
-    let device = namespaceDevices[visibleDeviceIndex];
-    let deviceId = namespaceDevices[visibleDeviceIndex].getAttribute("deviceId");
-    //get through each attribute of device to check what's changed
-    let updateBatch = [];
-    let fields = device.querySelectorAll(`.deviceField`);
-    console.log('fields ======================= ',fields);
-    fields.forEach((field)=>{
-        let originalValue = field.getAttribute("originalValue");
-        let newValue = field.value;
-        let contentType = field.getAttribute("contentType");
-        switch(contentType){
-            case "currency":
-                newValue = parseFloat(newValue.replace("$","")).toFixed(2);
-                originalValue = parseFloat(originalValue).toFixed(2);
-            break;
-            case "flag":
-                newValue = field.checked == true ? 1 : 0;
-            break;
-            case "boolean":
-                newValue = field.checked == true ? 1 : 0;
-            break;
-            case "stringSelect":
-                newValue = newValue.toLowerCase() == originalValue.toLowerCase() ? originalValue : newValue;
-            break;
-            default:
-                newValue = field.value;
-        } // end of switch newValue
-
-        if(originalValue==newValue) return false;
-
-        updateBatch.push({
-            "id" : deviceId,
-            "for" : field.getAttribute("for"),
-            "value" : newValue
-        });
-
-    }); // end of field.forEach
-    
-    // find object to update on deviceObjects array
-    // for each element of update
-    updateBatch.forEach((updateElement)=>{
-        let deviceId = +updateElement.id;
-        let objectToUpdate = deviceObjects[namespace].find((device)=>device._id==deviceId);
-        console.log("objectToUpdate =>", objectToUpdate);
-        objectToUpdate[updateElement.for].value = updateElement.value;
-        console.log("objectUpdated =>", objectToUpdate);
-
-        //update in database
-        let deviceToUpdate = devices.find((device)=>device.id==deviceId);
-        console.log("deviceToUpdate =>", deviceToUpdate);
-        deviceToUpdate[(updateElement.for).replace("_","")] = updateElement.value;
-        console.log("deviceUpdated =>" , deviceToUpdate);
-
-        //persistence of data
-        localStorage.setItem("devices", JSON.stringify(devices));
-
-    });
-
-    // disable the update button
-    button.disabled = true;
-    button.setAttribute("toBeEnabled",true);
-
-    // indicate to user the data was updated
-    messageUser("SUCCESS", "The contents were updated with success");
-    */
-
-} // end of function newDeviceToNamespace
-
-function messageUser(title,message){
-    let options = {
-        "keyboard":true,
-        "focus":true,
-        "show":true
-    };
-    document.getElementById("userMessageModalTitle").innerHTML = title;
-    document.getElementById("userMessageModalBody").innerHTML = message;
-    document.getElementById("userMessageModalTrigger").click();
-
-}
-
-function askUserYesNo(title,message){
-    let options = {
-        "keyboard":true,
-        "focus":true,
-        "show":true
-    };
-    document.getElementById("askUserYesNoModalTitle").innerHTML = title;
-    document.getElementById("askUserYesNoModalBody").innerHTML = message;
-    document.getElementById("askUserYesNoModalTrigger").click();
-
-}
+} // end of window.onload
 
 function initialize(){
 
@@ -544,6 +315,94 @@ function initialize(){
     console.log("devices at end of initialize = ", devices);
 
 } // end of initialize
+
+function updateDeviceInNamespace(event){
+    event.stopPropagation();
+    event.preventDefault();
+    let button = event.target;
+    let namespace = button.getAttribute("namespace");
+    //let updateButton = document.querySelector(`.updateDeviceButton[namespace="${namespace}"]`);
+    let actionButtonsNavigation = document.querySelector(`.action-buttons-navigation[namespace="${namespace}"]`);
+    let visibleDeviceIndex = actionButtonsNavigation.getAttribute("visibleDeviceIndex");
+    let namespaceDevices = document.querySelectorAll(`.device-contents[namespace="${namespace}"] .deviceItem`);
+    let device = namespaceDevices[visibleDeviceIndex];
+    let deviceId = namespaceDevices[visibleDeviceIndex].getAttribute("deviceId");
+    //get through each attribute of device to check what's changed
+    let updateBatch = [];
+    let fields = device.querySelectorAll(`.deviceField`);
+    console.log('fields ======================= ',fields);
+    fields.forEach((field)=>{
+        let originalValue = field.getAttribute("originalValue");
+        let newValue = field.value;
+        let contentType = field.getAttribute("contentType");
+        switch(contentType){
+            case "currency":
+                newValue = parseFloat(newValue.replace("$","")).toFixed(2);
+                originalValue = parseFloat(originalValue).toFixed(2);
+            break;
+            case "flag":
+                newValue = field.checked == true ? 1 : 0;
+            break;
+            case "boolean":
+                newValue = field.checked == true ? 1 : 0;
+            break;
+            case "stringSelect":
+                newValue = newValue.toLowerCase() == originalValue.toLowerCase() ? originalValue : newValue;
+            break;
+            default:
+                newValue = field.value;
+        } // end of switch newValue
+  
+        if(originalValue==newValue) return false;
+  
+        updateBatch.push({
+            "id" : deviceId,
+            "for" : field.getAttribute("for"),
+            "value" : newValue
+        });
+  
+    }); // end of field.forEach
+    
+    // find object to update on deviceObjects array
+    // for each element of update
+    updateBatch.forEach((updateElement)=>{
+        let deviceId = updateElement.id;
+        let objectToUpdate = deviceObjects[namespace].find((device)=>device._id==deviceId);
+        console.log("objectToUpdate =>", objectToUpdate);
+        objectToUpdate[updateElement.for].value = updateElement.value;
+        console.log("objectUpdated =>", objectToUpdate);
+  
+        //update in database
+        let deviceToUpdate = devices.find((device)=>device.id==deviceId);
+        console.log("deviceToUpdate =>", deviceToUpdate);
+        deviceToUpdate[(updateElement.for).replace("_","")] = updateElement.value;
+        console.log("deviceUpdated =>" , deviceToUpdate);
+  
+        //persistence of data
+        localStorage.setItem("devices", JSON.stringify(devices));
+  
+    });
+  
+    // disable the update button
+    button.disabled = true;
+    button.setAttribute("toBeEnabled",true);
+  
+    // indicate to user the data was updated
+    messageUser("SUCCESS", "The contents were updated with success");
+  
+} // end of function updateDeviceInNamespace
+
+function newDeviceToNamespace(event){
+    event.stopPropagation();
+    event.preventDefault();
+    let button = event.target;
+    let namespace = button.getAttribute("namespace");
+    // let updateButton = document.querySelector(`.updateDeviceButton[namespace="${namespace}"]`);
+    let actionButtonsNavigation = document.querySelector(`.action-buttons-navigation[namespace="${namespace}"]`);
+    // add new device markup to namespace
+    addNewDeviceMarkupToNamespace(namespace);
+    return true;
+} // end of function newDeviceToNamespace
 
 function addNewDeviceMarkupToNamespace(namespace){
     
@@ -914,7 +773,7 @@ function saveNewDevice(event){
 
 
     console.log("clicked to save new device");
-}
+} // end of saveNewDevice
 
 function cancelSaveNewDevice(event){
     event.preventDefault();
@@ -949,71 +808,7 @@ function cancelSaveNewDevice(event){
     });
 
     
-}
-
-function resetDevicesShowInNamespace(namespace){
-    let devices = document.querySelectorAll(`.deviceItem[namespace="${namespace}"]`);
-    if(devices[0]===undefined) return;
-    devices[0].style.display = "block";
-    resetNavigationButtonsInNamespace(namespace);
-    resetDataButtonsInNamespace(namespace);
-}
-
-function resetNavigationButtonsInNamespace(namespace){
-    let container = document.querySelector(`.action-buttons-navigation[namespace='${namespace}']`);
-    let devices = document.querySelectorAll(`.deviceItem[namespace="${namespace}"]`);
-    let previousButton = document.querySelector(`button.previousDeviceButton[namespace='${namespace}']`);
-    let nextButton = document.querySelector(`button.nextDeviceButton[namespace='${namespace}']`);
-    if(devices.length<=1){
-        previousButton.disabled = true;
-        nextButton.disabled = true;
-        container.setAttribute("visibledeviceindex",0);
-    } else {
-        previousButton.disabled = true;
-        nextButton.disabled = false;
-        container.setAttribute("visibledeviceindex",0);
-    } 
-} // function resetNavigationButtonsInNamespace(namespace)
-
-function resetDataButtonsInNamespace(namespace){
-    let container = document.querySelector(`.data-buttons-navigation[namespace='${namespace}']`);
-    let devices = document.querySelectorAll(`.deviceItem[namespace="${namespace}"]`);
-    let newDeviceButton = document.querySelector(`button.newDeviceButton[namespace='${namespace}']`);
-    let updateDeviceButton = document.querySelector(`button.updateDeviceButton[namespace='${namespace}']`);
-    let deleteDeviceButton = document.querySelector(`button.deleteDeviceButton[namespace='${namespace}']`);
-
-    newDeviceButton.disabled = false;
-    updateDeviceButton.disabled = devices.length===0 ? true : false;
-    deleteDeviceButton.disabled = devices.length===0 ? true : false;
-    
-} // function resetNavigationButtonsInNamespace(namespace)
-
-function bindFieldsToChangeEvent(){
-    //bind each device field in order to enable update button on changing events
-    let fields = document.querySelectorAll(".deviceField");
-    fields.forEach((field)=>{
-        //console.log("this field is binding to change *************************", field);
-        let namespace = field.getAttribute("namespace");
-        let button = document.querySelector(`.updateDeviceButton[namespace="${namespace}"]`);
-        if(button.disabled=true){
-            button.setAttribute("toBeEnabled","true");
-            field.addEventListener("change",enableUpdateButton);
-            field.addEventListener("blur",enableUpdateButton);
-            field.addEventListener("keyup",enableUpdateButton);
-        }
-    }); // end of fields.forEach field
-
-    function enableUpdateButton(event){
-        //console.log("enableUpdateButton called");
-        let field = event.target;
-        let namespace = field.getAttribute("namespace");
-        let button = document.querySelector(`.updateDeviceButton[toBeEnabled="true"][namespace="${namespace}"]`);
-        if(button!==undefined && button!==null){
-            button.disabled = false;
-            button.removeAttribute("toBeEnabled");
-        }
-    }
-} // function bindFieldsToChangeEvent()
+} // end of cancelSaveNewDevice
 
 function deleteDeviceFromNamespace(event){
     let button = event.target;
