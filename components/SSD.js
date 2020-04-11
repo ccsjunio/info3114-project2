@@ -28,8 +28,10 @@ export class SSD extends DiskDevice{
             type: "string",
             possibleValues: []
         };
-        this._namespace = "ssd";
-        this._namespaceTitle = "SSD"
+        this._namespace = {
+            name: "ssd",
+            title: "SSD"
+        };
     }
 
 }
