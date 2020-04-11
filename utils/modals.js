@@ -1,3 +1,11 @@
+// controls modals
+// and the contents of title
+// and message
+
+// modal to acknolledge user of
+// some information or results of an action
+// like the successful update of a device
+// the modal follows the bootstrap format
 let messageUser = function(title,message){
   let options = {
       "keyboard":true,
@@ -10,6 +18,10 @@ let messageUser = function(title,message){
 
 }
 
+// modal to ask confirmation from the user
+// before taking an action
+// like deleting a device
+// the modal follows the bootstrap format
 let askUserYesNo = function(title,message){
   let options = {
       "keyboard":true,
