@@ -22,6 +22,7 @@ let deleteDeviceFromNamespace = function(event){
     let askUserYesNoModal = document.getElementById("askUserYesNoModal");
     let buttonCancel = askUserYesNoModal.querySelector("button#answerCancel");
     let buttonYes = askUserYesNoModal.querySelector("button#answerYes");
+    buttonYes.setAttribute("namespace",namespace);
     let buttonClose = askUserYesNoModal.querySelector('button.close');
 
     // listener to the user when it does not confirm the deletion
@@ -33,41 +34,48 @@ let deleteDeviceFromNamespace = function(event){
     });
 
     // listenet to the user when they confirm the deletion action
-    buttonYes.addEventListener("click",(event)=>{
-        // map which device is visible, to identify the element to be deleted
-        let visibleDeviceIndex = document.querySelector(`.action-buttons-navigation[namespace='${namespace}']`).getAttribute("visibleDeviceIndex");
-        // map all the devices in the namespace. the index got above will point to
-        // a device in this collection
-        let devicesInNamespace = document.querySelectorAll(`.device-contents[namespace='${namespace}'] .deviceItem`);
-        // if the index points to a non-existent object for some reason,
-        // do not execute anything
-        if(devicesInNamespace[visibleDeviceIndex]===undefined) return;
-        // gets the device id in order to delete the device from
-        // the database and collection of objects
-        let deviceId = devicesInNamespace[visibleDeviceIndex].getAttribute("deviceId");
-        // reset from devices array, in our instantiation of a database
-        let indexOfDeviceToRemoveFromDevices = devices.findIndex((device)=>device.id==deviceId);
-        devices.splice(indexOfDeviceToRemoveFromDevices,1);
-        // reset from deviceObjects array
-        let indexOfDeviceToRemoveFromDevicesObjects = deviceObjects[namespace].findIndex((device)=>device._id==deviceId);
-        deviceObjects.splice(indexOfDeviceToRemoveFromDevicesObjects,1);
-        // reset on local storage
-        localStorage.setItem("devices", JSON.stringify(devices));
-        // remove index from namespace markup
-        // this erases the markup from the namespace
-        // in the screen 
-        devicesInNamespace[visibleDeviceIndex].remove();
-        // reset the arrangement of devices remaining in the
-        // namespace
-        resetDevicesShowInNamespace(namespace);
-        /*if(devicesInNamespace===undefined){
-            button.disabled=true;
-        }*/
-        // hide the modal by triggering the
-        // close button and letting the construct
-        // from bootstrap take the action
-        buttonClose.click();
-    });
-}
+    buttonYes.addEventListener("click", deleteDevice);
+        
+} // let deleteDeviceFromNamespace = function(event)
+
+function deleteDevice(){
+    event.stopPropagation();
+    event.preventDefault();
+    let button = event.target; 
+    let namespace = button.getAttribute("namespace");
+    // map button close
+    let buttonCancel = askUserYesNoModal.querySelector("button#answerCancel");
+    // map which device is visible, to identify the element to be deleted
+    let visibleDeviceIndex = document.querySelector(`.action-buttons-navigation[namespace='${namespace}']`).getAttribute("visibleDeviceIndex");
+    // map all the devices in the namespace. the index got above will point to
+    // a device in this collection
+    let devicesInNamespace = document.querySelectorAll(`.device-contents[namespace='${namespace}'] .deviceItem`);
+    // if the index points to a non-existent object for some reason,
+    // do not execute anything
+    if(devicesInNamespace[visibleDeviceIndex]===undefined) return;
+    // gets the device id in order to delete the device from
+    // the database and collection of objects
+    let deviceId = devicesInNamespace[visibleDeviceIndex].getAttribute("deviceId");
+    // reset from devices array, in our instantiation of a database
+    let indexOfDeviceToRemoveFromDevices = devices.findIndex((device)=>device.id==deviceId);
+    devices.splice(indexOfDeviceToRemoveFromDevices,1);
+    // reset from deviceObjects array
+    let indexOfDeviceToRemoveFromDevicesObjects = deviceObjects[namespace].findIndex((device)=>device._id==deviceId);
+    deviceObjects.splice(indexOfDeviceToRemoveFromDevicesObjects,1);
+    // reset on local storage
+    localStorage.setItem("devices", JSON.stringify(devices));
+    // remove index from namespace markup
+    // this erases the markup from the namespace
+    // in the screen 
+    // devicesInNamespace.splice(visibleDeviceIndex,1);
+    devicesInNamespace[visibleDeviceIndex].remove();
+    // hide the modal by triggering the
+    // close button and letting the construct
+    // from bootstrap take the action
+    buttonCancel.click();
+    // reset the arrangement of devices remaining in the
+    // namespace
+    resetDevicesShowInNamespace(namespace);
+} // end of deleteDevice
 
 export { deleteDeviceFromNamespace }
