@@ -10,14 +10,24 @@
     min-height: 200px;
 }
 
+.namespace-container{
+    border-color: #555;
+    border-width: 2px;
+    border-radius: 10px;
+    box-shadow: gray 5px 5px 10px;
+}
+
 .card-col{
     margin-top: 20px;
+}
+
+.device-contents{
+    border:none;
 }
 
 .device-contents .row .col-12{
     margin-bottom:20px;
     border-bottom:1px solid #cccccc;
-    background-color: yellow;
     padding: 10px;
 }
 
@@ -35,4 +45,24 @@
 
 #askUserYesNoModalTrigger{
     display: none;
+}
+
+footer{
+    font-size: 0.8rem;
+    font-style: italic;
+}
+
+.deviceItem[namespace='videoDevice']{
+    background-color: #05386B;
+    color:#467199;
+}
+
+.deviceItem[namespace='hardDisk']{
+    background-color: #379683;
+    columns: #66b3a6;
+}
+
+.deviceItem[namespace='ssd']{
+    background-color: #5cdb95;
+    columns: #3ba26a;
 }
