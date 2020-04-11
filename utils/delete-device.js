@@ -8,50 +8,66 @@ import { bindFieldsToChangeEvent, bindNavigationButtons, bindDataButtons } from 
 import { messageUser, askUserYesNo } from "/utils/modals.js";
 
 
-
+// this function is a callback to delete a device
+// called upon the press of the delete button in the namespace
 let deleteDeviceFromNamespace = function(event){
-  let button = event.target;
-  let namespace = button.getAttribute("namespace");
+    // identify the button pressed and its namespace
+    let button = event.target;
+    let namespace = button.getAttribute("namespace");
 
-  // confirm that the user really wants to delete the device
-  askUserYesNo("Delete this device", "Are you sure you want to delete this device? All information will be permanently be erased!");
+    // confirm that the user really wants to delete the device
+    askUserYesNo("Delete this device", "Are you sure you want to delete this device? All information will be permanently be erased!");
 
-  let askUserYesNoModal = document.getElementById("askUserYesNoModal");
-  let buttonCancel = askUserYesNoModal.querySelector("button#answerCancel");
-  let buttonYes = askUserYesNoModal.querySelector("button#answerYes");
-  let buttonClose = askUserYesNoModal.querySelector('button.close');
+    // maps the buttons from the modal
+    let askUserYesNoModal = document.getElementById("askUserYesNoModal");
+    let buttonCancel = askUserYesNoModal.querySelector("button#answerCancel");
+    let buttonYes = askUserYesNoModal.querySelector("button#answerYes");
+    let buttonClose = askUserYesNoModal.querySelector('button.close');
 
-  buttonCancel.addEventListener("click",(event)=>{
-      console.log("clicked on close - do not delete the device");
-      // nothing to do here
-  });
+    // listener to the user when it does not confirm the deletion
+    // nothing to do in this version
+    // the modal is closed as native programming from
+    // bootstrap
+    buttonCancel.addEventListener("click",(event)=>{
+        // nothing to do here
+    });
 
-  buttonYes.addEventListener("click",(event)=>{
-      console.log("clicked on yes - to delete the device");
-      let visibleDeviceIndex = document.querySelector(`.action-buttons-navigation[namespace='${namespace}']`).getAttribute("visibleDeviceIndex");
-      let devicesInNamespace = document.querySelectorAll(`.device-contents[namespace='${namespace}'] .deviceItem`);
-      if(devicesInNamespace[visibleDeviceIndex]===undefined) return;
-      let deviceId = devicesInNamespace[visibleDeviceIndex].getAttribute("deviceId");
-      //reset from devices array
-      let indexOfDeviceToRemoveFromDevices = devices.findIndex((device)=>device.id==deviceId);
-      devices.splice(indexOfDeviceToRemoveFromDevices,1);
-      //reset from deviceObjects array
-      console.log("deviceObjects=",deviceObjects);
-      console.log("devices=",devices);
-      let indexOfDeviceToRemoveFromDevicesObjects = deviceObjects[namespace].findIndex((device)=>device._id==deviceId);
-      deviceObjects.splice(indexOfDeviceToRemoveFromDevicesObjects,1);
-      //reset on local storage
-      localStorage.setItem("devices", JSON.stringify(devices));
-      //remove index from namespace markup
-      devicesInNamespace[visibleDeviceIndex].remove();
-      resetDevicesShowInNamespace(namespace);
-      if(devicesInNamespace===undefined){
-          button.disabled.true;
-      }
-      //hide the modal
-      buttonClose.click();
-  });
-
+    // listenet to the user when they confirm the deletion action
+    buttonYes.addEventListener("click",(event)=>{
+        // map which device is visible, to identify the element to be deleted
+        let visibleDeviceIndex = document.querySelector(`.action-buttons-navigation[namespace='${namespace}']`).getAttribute("visibleDeviceIndex");
+        // map all the devices in the namespace. the index got above will point to
+        // a device in this collection
+        let devicesInNamespace = document.querySelectorAll(`.device-contents[namespace='${namespace}'] .deviceItem`);
+        // if the index points to a non-existent object for some reason,
+        // do not execute anything
+        if(devicesInNamespace[visibleDeviceIndex]===undefined) return;
+        // gets the device id in order to delete the device from
+        // the database and collection of objects
+        let deviceId = devicesInNamespace[visibleDeviceIndex].getAttribute("deviceId");
+        // reset from devices array, in our instantiation of a database
+        let indexOfDeviceToRemoveFromDevices = devices.findIndex((device)=>device.id==deviceId);
+        devices.splice(indexOfDeviceToRemoveFromDevices,1);
+        // reset from deviceObjects array
+        let indexOfDeviceToRemoveFromDevicesObjects = deviceObjects[namespace].findIndex((device)=>device._id==deviceId);
+        deviceObjects.splice(indexOfDeviceToRemoveFromDevicesObjects,1);
+        // reset on local storage
+        localStorage.setItem("devices", JSON.stringify(devices));
+        // remove index from namespace markup
+        // this erases the markup from the namespace
+        // in the screen 
+        devicesInNamespace[visibleDeviceIndex].remove();
+        // reset the arrangement of devices remaining in the
+        // namespace
+        resetDevicesShowInNamespace(namespace);
+        /*if(devicesInNamespace===undefined){
+            button.disabled=true;
+        }*/
+        // hide the modal by triggering the
+        // close button and letting the construct
+        // from bootstrap take the action
+        buttonClose.click();
+    });
 }
 
 export { deleteDeviceFromNamespace }
