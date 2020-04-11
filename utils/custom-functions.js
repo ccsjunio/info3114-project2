@@ -1,3 +1,10 @@
+// this is a repository of custom functions
+// to perform a variety of tasks necessary in the
+// application
+
+
+// this function converts the number for a currency
+// format
 let toCurrency = function (value){
     
     let integerPart = (parseInt(+value)).toString();
@@ -16,7 +23,8 @@ let toCurrency = function (value){
 };
 
 
-
+// this function creates an unique id format to be
+// used for the devices in the database
 let createUniqueId = function (){
     var dt = new Date().getTime();
     var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
