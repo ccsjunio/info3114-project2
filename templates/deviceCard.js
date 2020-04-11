@@ -33,4 +33,4 @@ function buildDeviceCard(namespace){
     `
 }
 
-export {buildDeviceCard};
+export { buildDeviceCard };

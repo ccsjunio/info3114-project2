@@ -69,5 +69,6 @@ let  devices = localStorage.getItem("devices") ? JSON.parse(localStorage.getItem
         }
     ];
 
+let deviceObjects = [];
 
-export { devices }
+export { devices, deviceObjects }

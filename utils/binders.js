@@ -1,4 +1,7 @@
 import { showNextDeviceInNamespace, showPreviousDeviceInNamespace } from  "/utils/navigation.js";
+import { newDeviceToNamespace } from "/utils/add-device.js";
+import { updateDeviceInNamespace } from "/utils/update-device.js";
+import { deleteDeviceFromNamespace } from "/utils/delete-device.js";
 
 let bindFieldsToChangeEvent = function(){
   //bind each device field in order to enable update button on changing events
@@ -43,4 +46,25 @@ let bindNavigationButtons = function(){
   });
 } // end of bindNavigationButtons
 
-export { bindFieldsToChangeEvent, bindNavigationButtons }
+let bindDataButtons = function(){
+  //bind new button
+  let newDeviceButtons = document.querySelectorAll(".newDeviceButton");
+  newDeviceButtons.forEach((button)=>{
+      button.addEventListener("click",newDeviceToNamespace);
+  })
+
+  //bind update button
+  let updateDeviceButtons = document.querySelectorAll(".updateDeviceButton");
+  //console.log("update device buttons ==================================== ",updateDeviceButtons);
+  updateDeviceButtons.forEach((button)=>{
+      button.addEventListener("click",updateDeviceInNamespace);
+  });
+
+  //bind delete button
+  let deleteDeviceButtons = document.querySelectorAll(".deleteDeviceButton");
+  deleteDeviceButtons.forEach((button)=>{
+      button.addEventListener("click",deleteDeviceFromNamespace);
+  });
+} // end of bindDataButtons
+
+export { bindFieldsToChangeEvent, bindNavigationButtons, bindDataButtons }

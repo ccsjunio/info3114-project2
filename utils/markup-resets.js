@@ -35,4 +35,22 @@ let resetDataButtonsInNamespace = function(namespace){
   
 } // function resetNavigationButtonsInNamespace(namespace)
 
-export { resetDevicesShowInNamespace, resetNavigationButtonsInNamespace, resetDataButtonsInNamespace }
+let showFirstElementOfEachNamespace = function(){
+  //show the first element on each namespace
+  let namespacesMarkup = document.querySelectorAll(".device-contents");
+  //console.log(namespaces);
+
+  namespacesMarkup.forEach((namespace)=>{
+
+      let namespaceDevices = namespace.querySelectorAll(".device-window");
+      //console.log("device:",devices);
+
+      if(namespaceDevices.length==0 || namespaceDevices===undefined) return;
+
+      //console.log(devices[0]);
+      namespaceDevices[0].style.display = "block";
+
+  });
+}
+
+export { resetDevicesShowInNamespace, resetNavigationButtonsInNamespace, resetDataButtonsInNamespace, showFirstElementOfEachNamespace }
