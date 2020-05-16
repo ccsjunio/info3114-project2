@@ -50,7 +50,7 @@ function initialize(){
     // that are loaded
     namespaces.forEach((namespace)=>{
         if(deviceObjects[namespace.name] === undefined){
-            deviceObjects[namespace.name] = [];
+            deviceObjects[namespace.name] = [];    
         }
     });
 
