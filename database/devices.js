@@ -2,6 +2,7 @@
 // in an expansion, can be replaced with
 // a connection that exports the devices
 // retrieved from a database
+// 
 
 let  devices = localStorage.getItem("devices") ? JSON.parse(localStorage.getItem("devices")) : [
         {
