@@ -1,84 +1,20 @@
-name: CI
+name: Greet Everyone
+# This workflow is triggered on pushes to the repository.
+on: [push]
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
+    # Job name is Greeting
+    name: Greeting
+    # This job runs on Linux
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v2
-
-    # Runs a single command using the runners shell
-    - name: Run a one-line script
-      run: echo Hello, world!
-
-    # Runs a set of commands using the runners shell
-    - name: Run a multi-line script
-      run: |
-        USER=ubuntu
-        HOST=3.134.188.110
-        BANDWIDTH=2048
-        ID="$USER@$HOST"
-        echo "Deploying to $TARGET..."
-        echo
-
-        upload () {
-            SOURCE="../../../"
-
-            if [ ! -s $SOURCE ]; then
-                echo
-                echo "Unable to deploy: file $SOURCE does not exist!"
-                echo
-                exit 2
-            fi
-
-            TS=`date +'%Y%m%d%H%M'`
-            DEST_DIR="/var/www/html/info3114/project2/releases/$TS"
-            ASSETS_DEST="$DEST_DIR"
-            TRANSPORT="/tmp/zenlab-web-$TS.tar.gz"
-
-            echo
-            echo "Creating remote directory $DEST_DIR"
-            echo
-
-            echo "mkdir -p $DEST_DIR" | ssh $ID
-
-            echo
-            echo "Uploading $TRANSPORT $ID:/tmp"
-            echo
-
-            tar -C $SOURCE -czvf $TRANSPORT .
-
-            scp -l $BANDWIDTH $TRANSPORT $ID:/tmp
-
-            if [ ! $? -eq 0 ]; then
-                echo 
-                echo "Unable to deploy: Upload failed!"
-                echo
-                exit 3
-            fi
-
-            RCMD="tar -C $DEST_DIR -xvf $TRANSPORT; ln -nfs $DEST_DIR /opt/app/zenlab-spa/current"
-            echo "Remote executing: $RCMD"
-            echo $RCMD | ssh $ID
-        }
-
-        upload
-
-        echo
-        echo Done
-        echo
-
-        exit $?
+      # This step uses GitHub's hello-world-javascript-action: https://github.com/actions/hello-world-javascript-action
+      - name: Hello world
+        uses: actions/hello-world-javascript-action@v1
+        with:
+          who-to-greet: 'Mona the Octocat'
+        id: hello
+      # This step prints an output (time) from the previous step's action.
+      - name: Echo the greeting's time
+        run: echo 'The time was ${{ steps.hello.outputs.time }}.'
