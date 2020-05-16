@@ -2,7 +2,7 @@ export class Device {
 
     constructor(id,status,replacementCost,supplierName,serialNumber){
         this._id = id,
-        this._status = {
+        this._status = { 
             name: "Status",
             value: status,
             type: "flag",
